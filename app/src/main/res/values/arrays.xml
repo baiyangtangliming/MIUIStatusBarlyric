@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="need_module">
+        <item>com.android.settings</item>
+        <item>com.android.systemui</item>
+        <item>com.kugou.android</item>
+        <item>com.netease.cloudmusic</item>
+        <item>com.tencent.qqmusic</item>
+        <item>cn.kuwo.player</item>
+        <item>com.miui.aod</item>
+    </array>
+    <!-- Reply Preference -->
+    <string-array name="reply_entries">
+        <item>Reply</item>
+        <item>Reply to all</item>
+    </string-array>
+
+    <string-array name="reply_values">
+        <item>reply</item>
+        <item>reply_all</item>
+    </string-array>
+</resources>

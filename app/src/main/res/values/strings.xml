@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">MIUI状态栏歌词</string>
+    <string name="title_activity_settings">状态栏歌词</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="tab_text_1">Tab 1</string>
+    <string name="tab_text_2">Tab 2</string>
+</resources>
