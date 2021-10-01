@@ -563,6 +563,7 @@ public class MainHook implements IXposedHookLoadPackage {
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         super.afterHookedMethod(param);
                         setIconP("netease");
+                        LyricTools.setlyric(param.args[0].toString());
                         musicName = param.args[0].toString();
                         XposedBridge.log("网易云： " + param.args[0].toString());
                     }
