@@ -3,26 +3,24 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="cn.fkj233.hook.miuistatusbarlrcy">
 
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.FORCE_STOP_PACKAGES"
+        tools:ignore="ProtectedPermissions" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.MIUI状态栏歌词">
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:label="@string/app_name">
+        android:supportsRtl="true">
+
+        <activity android:name=".SettingsActivity"
+            android:theme="@style/Theme.AppCompat">
             <intent-filter>
-                <action android:name="msbl.statusbarlyric" />
-                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="msbl.statusbarlyric"/>
+                <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES"/>
+                <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
 

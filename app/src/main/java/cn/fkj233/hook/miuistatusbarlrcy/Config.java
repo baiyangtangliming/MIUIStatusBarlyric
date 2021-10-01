@@ -175,7 +175,7 @@ public class Config {
         try {
             return (String) this.config.get("自定义签名");
         } catch (JSONException e) {
-            return "莫负初心";
+            return "";
         }
     }
 
