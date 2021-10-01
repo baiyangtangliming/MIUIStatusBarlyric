@@ -1,12 +1,14 @@
 package cn.fkj233.hook.miuistatusbarlrcy;
 
+import android.os.Environment;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class LyricTools {
-    static String path = "/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msbl";
+    static String path = Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msbl";
 
     public static String getlyric() {
         String str = "";

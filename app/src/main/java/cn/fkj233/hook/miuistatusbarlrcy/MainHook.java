@@ -33,6 +33,7 @@ import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextPaint;
@@ -53,7 +54,7 @@ public class MainHook implements IXposedHookLoadPackage {
     private static final String KEY_LYRIC = "lyric";
     private static final float[] NEGATIVE;
     private static String musicName = "";
-    public static String PATH = "/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/";
+    public static String PATH = Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/";
     String iconM = "";
 
     static {
@@ -898,7 +899,7 @@ public class MainHook implements IXposedHookLoadPackage {
 
     public void setlyric(String str) {
         try {
-            FileOutputStream fileOutputStream = new FileOutputStream("/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msbl");
+            FileOutputStream fileOutputStream = new FileOutputStream(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msbl");
             fileOutputStream.write(str.getBytes());
             fileOutputStream.close();
         } catch (IOException e) {

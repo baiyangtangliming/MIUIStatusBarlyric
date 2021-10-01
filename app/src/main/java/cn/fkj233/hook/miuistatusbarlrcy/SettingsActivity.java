@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -287,22 +288,22 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         public void initIcon(Context context) {
-            if (!new File("/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "icon.png").exists() && !new File("/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "icon.gif").exists()) {
-                copyAssets(context, "icon/icon.png", "/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/icon.png");
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "icon.png").exists() && !new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "icon.gif").exists()) {
+                copyAssets(context, "icon/icon.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/icon.png");
             }
-            if (!new File("/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "icon7.png").exists() && !new File("/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "icon7.gif").exists())
-                copyAssets(context, "icon/icon7.png", "/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/icon7.png");
-            if (!new File("/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "kugou.png").exists()) {
-                copyAssets(context, "icon/kugou.png", "/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/kugou.png");
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "icon7.png").exists() && !new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "icon7.gif").exists())
+                copyAssets(context, "icon/icon7.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/icon7.png");
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "kugou.png").exists()) {
+                copyAssets(context, "icon/kugou.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/kugou.png");
             }
-            if (!new File("/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "netease.png").exists()) {
-                copyAssets(context, "icon/netease.png", "/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/netease.png");
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "netease.png").exists()) {
+                copyAssets(context, "icon/netease.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/netease.png");
             }
-            if (!new File("/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "qqmusic.png").exists()) {
-                copyAssets(context, "icon/qqmusic.png", "/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/qqmusic.png");
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "qqmusic.png").exists()) {
+                copyAssets(context, "icon/qqmusic.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/qqmusic.png");
             }
-            if (!new File("/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "kuwo.png").exists()) {
-                copyAssets(context, "icon/kuwo.png", "/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/kuwo.png");
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "kuwo.png").exists()) {
+                copyAssets(context, "icon/kuwo.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/kuwo.png");
             }
         }
 
@@ -366,10 +367,10 @@ public class SettingsActivity extends AppCompatActivity {
 
 
         public void init() {
-            File file = new File("/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy");
-            File file2 = new File("/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msbl");
-            File file3 = new File("/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msblConfig");
-            File file4 = new File("/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msblConfig2");
+            File file = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy");
+            File file2 = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msbl");
+            File file3 = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msblConfig");
+            File file4 = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msblConfig2");
             if (!file.exists()) {
                 file.mkdirs();
             }

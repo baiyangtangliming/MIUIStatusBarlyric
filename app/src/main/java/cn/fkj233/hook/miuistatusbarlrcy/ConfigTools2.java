@@ -1,5 +1,7 @@
 package cn.fkj233.hook.miuistatusbarlrcy;
 
+import android.os.Environment;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -7,7 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class ConfigTools2 {
-    static String path = "/sdcard/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msblConfig2";
+    static String path = Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msblConfig2";
 
     public static String getConfig() {
         new File(path);
