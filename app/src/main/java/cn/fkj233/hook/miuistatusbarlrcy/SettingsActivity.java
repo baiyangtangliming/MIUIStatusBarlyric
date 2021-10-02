@@ -26,7 +26,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Objects;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -305,6 +304,13 @@ public class SettingsActivity extends AppCompatActivity {
             if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "kuwo.png").exists()) {
                 copyAssets(context, "icon/kuwo.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/kuwo.png");
             }
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", ".nomedia").exists()) {
+                try {
+                    new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", ".nomedia").createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         public void copyAssets(Context context, String str, String str2) {
@@ -329,13 +335,13 @@ public class SettingsActivity extends AppCompatActivity {
         }
         
         private void checkPermission() {
-            if (ContextCompat.checkSelfPermission(getActivity(), "android.permission.WRITE_EXTERNAL_STORAGE") != 0) {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), "android.permission.WRITE_EXTERNAL_STORAGE")) {
+            if (ContextCompat.checkSelfPermission(requireActivity(), "android.permission.WRITE_EXTERNAL_STORAGE") != 0) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), "android.permission.WRITE_EXTERNAL_STORAGE")) {
                     Toast.makeText(getActivity(), "请开通相关权限，否则无法正常使用本应用！", Toast.LENGTH_SHORT).show();
                 }
                 String[] strArr = new String[1];
                 strArr[0] = "android.permission.WRITE_EXTERNAL_STORAGE";
-                ActivityCompat.requestPermissions(getActivity(), strArr, 1);
+                ActivityCompat.requestPermissions(requireActivity(), strArr, 1);
                 return;
             }
             Log.e("MIUIStatBar", "checkPermission: 已经授权！");
@@ -368,17 +374,10 @@ public class SettingsActivity extends AppCompatActivity {
 
         public void init() {
             File file = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy");
-            File file2 = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msbl");
             File file3 = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msblConfig");
             File file4 = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msblConfig2");
             if (!file.exists()) {
                 file.mkdirs();
-            }
-            if (!file2.exists()) {
-                try {
-                    file2.createNewFile();
-                } catch (IOException e) {
-                }
             }
             if (!file3.exists()) {
                 try {
@@ -396,13 +395,13 @@ public class SettingsActivity extends AppCompatActivity {
                     config3.setLyricOff(false);
                     config3.setLyricModel("增强模式");
                     config3.setHideNoti(false);
-                } catch (IOException e2) {
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
             if (!file4.exists()) {
                 Config2 config22 = new Config2();
                 config22.setIcon("关闭");
-                config22.setIconPath("");
             }
         }
     }

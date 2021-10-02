@@ -17,6 +17,7 @@ public class Config2 {
             this.temp = new JSONObject(ConfigTools2.getConfig() + "");
             this.config = new JSONObject(this.temp.getString("图标配置"));
         } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 
@@ -26,6 +27,7 @@ public class Config2 {
             this.temp.put("图标配置", this.config);
             ConfigTools2.setConfig(ConfigTools2.formateJson(this.temp.toString()));
         } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 
@@ -40,26 +42,6 @@ public class Config2 {
             return (String) this.config.get("图标模式");
         } catch (JSONException e) {
             return "关闭";
-        }
-    }
-
-    public void setIconPath(String str) {
-        try {
-            this.config.put("图标路径", str);
-            this.temp.put("图标配置", this.config);
-            ConfigTools2.setConfig(ConfigTools2.formateJson(this.temp.toString()));
-        } catch (JSONException e) {
-        }
-    }
-
-    public String getIconPath() {
-        if (this.config == null) {
-            return new Config2().getIconPath();
-        }
-        try {
-            return (String) this.config.get("图标路径");
-        } catch (JSONException e) {
-            return "";
         }
     }
 }

@@ -2,7 +2,6 @@ package cn.fkj233.hook.miuistatusbarlrcy;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
@@ -23,8 +22,10 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import android.app.ActivityManager;
 import android.app.AndroidAppHelper;
 import android.app.Application;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.ColorStateList;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
@@ -55,7 +56,9 @@ public class MainHook implements IXposedHookLoadPackage {
     private static final float[] NEGATIVE;
     private static String musicName = "";
     public static String PATH = Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/";
-    String iconM = "";
+    private Context context = null;
+    private static String lyric = "";
+    private static String iconPath = "";
 
     static {
         float[] fArr = new float[20];
@@ -81,13 +84,50 @@ public class MainHook implements IXposedHookLoadPackage {
         fArr[19] = (float) 0;
         NEGATIVE = fArr;
     }
+
+    public static class LyricReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals("Lyric_Server")) {
+                lyric = intent.getStringExtra("Lyric_Data");
+                Config2 config2 = new Config2();
+                switch (config2.getIcon()) {
+                    case "自动":
+                        iconPath = PATH + intent.getStringExtra("Lyric_Icon") + ".png";
+                        break;
+                    case "自定义":
+                        iconPath = PATH + "icon.png";
+                        break;
+                    default:
+                        iconPath = PATH + "夏.png";
+                        break;
+                }
+            }
+        }
+    }
+
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
+        // 获取Context
+        XposedHelpers.findAndHookMethod(Application.class, "attach", Context.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) {
+                context = (Context) param.args[0];
+                // 注册广播
+                if (lpparam.packageName.equals("com.android.systemui")) {
+                    IntentFilter filter = new IntentFilter();
+                    filter.addAction("Lyric_Server");
+                    context.registerReceiver(new LyricReceiver(), filter);
+                }
+            }
+        });
+
         switch (lpparam.packageName) {
             case "com.android.systemui":
                 XposedBridge.log("Hook SystemUI");
                 try {
-                    XposedHelpers.findAndHookMethod(lpparam.classLoader.loadClass("com.android.systemui.statusbar.phone.CollapsedStatusBarFragment"), "onViewCreated", Class.forName("android.view.View"), Class.forName("android.os.Bundle"), new XC_MethodHook() {
+                    // 状态栏歌词
+                    XposedHelpers.findAndHookMethod("com.android.systemui.statusbar.phone.CollapsedStatusBarFragment", lpparam.classLoader, "onViewCreated", Class.forName("android.view.View"), Class.forName("android.os.Bundle"), new XC_MethodHook() {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                             super.beforeHookedMethod(param);
@@ -97,7 +137,7 @@ public class MainHook implements IXposedHookLoadPackage {
                         protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                             super.afterHookedMethod(param);
                             Field clockField;
-                            final Application application = AndroidAppHelper.currentApplication();
+                            Application application = AndroidAppHelper.currentApplication();
                             AudioManager audioManager = (AudioManager) application.getSystemService(Context.AUDIO_SERVICE);
                             DisplayMetrics displayMetrics = new DisplayMetrics();
                             ((WindowManager) application.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(displayMetrics);
@@ -135,7 +175,7 @@ public class MainHook implements IXposedHookLoadPackage {
                             autoMarqueeTextView2.setTextSize(0, clock.getTextSize());
                             autoMarqueeTextView2.setSingleLine(true);
                             autoMarqueeTextView2.setMarqueeRepeatLimit(-1);
-                            final ViewFlipper viewFlipper = new ViewFlipper(application);
+                            ViewFlipper viewFlipper = new ViewFlipper(application);
                             viewFlipper.setPadding(5, 0, 0, 0);
                             viewFlipper.addView(autoMarqueeTextView);
                             viewFlipper.addView(autoMarqueeTextView2);
@@ -144,7 +184,7 @@ public class MainHook implements IXposedHookLoadPackage {
                             linearLayout.setGravity(19);
                             linearLayout.setOrientation(LinearLayout.HORIZONTAL);
                             linearLayout.addView(viewFlipper, 1);
-                            final AutoMarqueeTextView autoMarqueeTextView3 = new AutoMarqueeTextView(application);
+                            AutoMarqueeTextView autoMarqueeTextView3 = new AutoMarqueeTextView(application);
                             autoMarqueeTextView3.setLayoutParams(new LinearLayout.LayoutParams(-2, -2, (float) 19));
                             autoMarqueeTextView3.setWidth(0);
                             autoMarqueeTextView3.setHeight(clock.getHeight());
@@ -176,228 +216,223 @@ public class MainHook implements IXposedHookLoadPackage {
                             linearLayout3.addView(textView2);
                             linearLayout3.addView(gifView);
                             linearLayout.addView(linearLayout3, 1);
-                            Handler hAMT = new Handler() {
-                                @Override
-                                public void handleMessage(Message message) {
-                                    super.handleMessage(message);
-                                    autoMarqueeTextView.setEllipsize(TextUtils.TruncateAt.MARQUEE);
-                                }
-                            };
-                            Handler hAMT2 = new Handler() {
-                                @Override
-                                public void handleMessage(Message message) {
-                                    super.handleMessage(message);
-                                    autoMarqueeTextView2.setEllipsize(TextUtils.TruncateAt.MARQUEE);
-                                }
-                            };
-                            Handler hAMTC = new Handler() {
-                                @Override
-                                public void handleMessage(Message message) {
-                                    super.handleMessage(message);
-                                    autoMarqueeTextView3.setVisibility(View.VISIBLE);
-                                    cTextView.setVisibility(View.GONE);
-                                    cTextView.removeAllViews();
-                                    autoMarqueeTextView3.setEllipsize(TextUtils.TruncateAt.MARQUEE);
-                                }
-                            };
-                            Handler hT = new Handler() {
-                                @Override
-                                public void handleMessage(Message message) {
-                                    textView2.setCompoundDrawables((Drawable) message.obj, null, null, null);
-                                }
-                            };
+
+                            final Handler hAMT = new Handler(message -> {
+                                autoMarqueeTextView.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+                                return true;
+                            });
+
+                            final Handler hAMT2 = new Handler(message -> {
+                                autoMarqueeTextView2.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+                                return true;
+                            });
+
+                            final Handler hAMTC = new Handler(message -> {
+                                autoMarqueeTextView3.setVisibility(View.VISIBLE);
+                                cTextView.setVisibility(View.GONE);
+                                cTextView.removeAllViews();
+                                autoMarqueeTextView3.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+                                return true;
+                            });
+
+                            final Handler hT = new Handler(message -> {
+                                textView2.setCompoundDrawables((Drawable) message.obj, null, null, null);
+                                return true;
+                            });
+
                             Thread thread = new Thread(() -> {
                                 try {
                                     Thread.sleep(1500);
                                     hAMTC.sendMessage(hAMTC.obtainMessage());
                                 } catch (InterruptedException e) {
+                                    e.printStackTrace();
                                 }
                             });
                             thread.start();
 
-                            final Handler handler1 = new Handler() {
-                                @Override
-                                public void handleMessage(Message message) {
-                                    Config config;
-                                    super.handleMessage(message);
-                                    if (message.obj == null) {
-                                        config = new Config();
-                                    } else {
-                                        config = (Config) message.obj;
-                                    }
-                                    Config2 config2 = new Config2();
-                                    String string = message.getData().getString(KEY_LYRIC);
-                                    XposedBridge.log("GetData: " + string);
-                                    if (!string.equals("")) {
-                                        if (new File(config2.getIconPath()).exists()) {
-                                            gifView.setVisibility(View.GONE);
-                                            gifView.setMovieResource("");
-                                        } else {
-                                            textView2.setCompoundDrawables(null, null, null, null);
-                                            if (config2.getIcon().equals("自定义")) {
-                                                if (new File(PATH + "icon.gif").exists()) {
-                                                    gifView.setVisibility(View.VISIBLE);
-                                                    gifView.setMovieResource(PATH + "icon.gif");
-                                                } else {
-                                                    gifView.setVisibility(View.GONE);
-                                                    gifView.setMovieResource("");
-                                                }
-                                            }
-                                        }
-                                        int i = 0;
-                                        switch (config.getLyricAnim()) {
-                                            case "上滑":
-                                                i = 1;
-                                                break;
-                                            case "下滑":
-                                                i = 2;
-                                                break;
-                                            case "左滑":
-                                                i = 3;
-                                                break;
-                                            case "右滑":
-                                                i = 4;
-                                                break;
-                                            case "随机":
-                                                i = ((int) (Math.random() * ((double) 4))) + 1;
-                                                break;
-                                        }
-                                        if (i == 0) {
-                                            viewFlipper.setInAnimation(null);
-                                            viewFlipper.setOutAnimation(null);
-                                        } else {
-                                            viewFlipper.setInAnimation(new AnimationTools().translateIn(i));
-                                            viewFlipper.setOutAnimation(new AnimationTools().translateOut(i));
-                                        }
-                                        if (viewFlipper.getDisplayedChild() == 0 && !string.equals(autoMarqueeTextView.getText().toString())) {
-                                            // TODO 是否显示图标 不知道MiuiStatusBarManager在哪下 未实现
-//                                        if (config.getHideNoti() && MiuiStatusBarManager.isShowNotificationIcon(application)) {
-//                                            MiuiStatusBarManager.setShowNotificationIcon(application, false);
-//                                        }
-                                            viewFlipper.showNext();
-                                            if (config.getLyricAnim().equals("旋转")) {
-                                                thread.interrupt();
-                                                autoMarqueeTextView3.setEllipsize(null);
-                                                autoMarqueeTextView3.setText(string);
-                                                autoMarqueeTextView3.setVisibility(View.GONE);
-                                                cTextView.setVisibility(View.VISIBLE);
-                                                cTextView.setText(string, application, measuredHeight, clock.getTextSize(), clock.getTypeface(), clock.getTextColors());
-                                                new Thread(() -> {
-                                                    try {
-                                                        Thread.sleep(1500);
-                                                        hAMTC.sendMessage(hAMTC.obtainMessage());
-                                                    } catch (InterruptedException e) {
-                                                    }
-                                                }).start();
-                                                viewFlipper.setVisibility(View.GONE);
-                                            } else {
-                                                cTextView.setVisibility(View.GONE);
-                                                viewFlipper.setVisibility(View.VISIBLE);
-                                            }
-                                            autoMarqueeTextView2.setText(string);
-                                            autoMarqueeTextView2.setEllipsize(null);
-                                            new Thread(() -> {
-                                                try {
-                                                    Thread.sleep(1000);
-                                                } catch (InterruptedException e) {
-                                                }
-                                                hAMT2.sendMessage(hAMT2.obtainMessage());
-                                            }).start();
-                                            if (config.getLyricWidth() == -1) {
-                                                TextPaint paint = autoMarqueeTextView2.getPaint();
-                                                if (config.getLyricMaxWidth() == -1 || ((int) paint.measureText(string)) + 6 <= (dw * config.getLyricMaxWidth()) / 100) {
-                                                    autoMarqueeTextView.setWidth(((int) paint.measureText(string)) + 6);
-                                                    autoMarqueeTextView2.setWidth(((int) paint.measureText(string)) + 6);
-                                                    autoMarqueeTextView3.setWidth(((int) paint.measureText(string)) + 6);
-                                                    cTextView.setLayoutParams(new LinearLayout.LayoutParams(((int) paint.measureText(string)) + 6, measuredHeight, (float) 19));
-                                                } else {
-                                                    autoMarqueeTextView.setWidth((dw * config.getLyricMaxWidth()) / 100);
-                                                    autoMarqueeTextView2.setWidth((dw * config.getLyricMaxWidth()) / 100);
-                                                    autoMarqueeTextView3.setWidth((dw * config.getLyricMaxWidth()) / 100);
-                                                    cTextView.setLayoutParams(new LinearLayout.LayoutParams((dw * config.getLyricMaxWidth()) / 100, measuredHeight, (float) 19));
-                                                }
-                                            } else {
-                                                autoMarqueeTextView.setWidth((dw * config.getLyricWidth()) / 100);
-                                                autoMarqueeTextView2.setWidth((dw * config.getLyricWidth()) / 100);
-                                                autoMarqueeTextView3.setWidth((dw * config.getLyricWidth()) / 100);
-                                                cTextView.setLayoutParams(new LinearLayout.LayoutParams((dw * config.getLyricWidth()) / 100, measuredHeight, (float) 19));
-                                            }
-                                        } else if (viewFlipper.getDisplayedChild() == 1 && !string.equals(autoMarqueeTextView2.getText().toString())) {
-                                            // TODO 是否显示图标 不知道MiuiStatusBarManager在哪下 未实现
-//                                        if (config.getHideNoti() && MiuiStatusBarManager.isShowNotificationIcon(application)) {
-//                                            MiuiStatusBarManager.setShowNotificationIcon(application, false);
-//                                        }
-                                            viewFlipper.showNext();
-                                            if (config.getLyricAnim().equals("旋转")) {
-                                                thread.interrupt();
-                                                autoMarqueeTextView3.setEllipsize(null);
-                                                autoMarqueeTextView3.setText(string);
-                                                autoMarqueeTextView3.setVisibility(View.GONE);
-                                                cTextView.setVisibility(View.VISIBLE);
-                                                cTextView.setText(string, application, measuredHeight, clock.getTextSize(), clock.getTypeface(), clock.getTextColors());
-                                                new Thread(() -> {
-                                                    try {
-                                                        Thread.sleep(1500);
-                                                        hAMTC.sendMessage(hAMTC.obtainMessage());
-                                                    } catch (InterruptedException e) {
-                                                    }
-                                                }).start();
-                                                viewFlipper.setVisibility(View.GONE);
-                                            } else {
-                                                cTextView.setVisibility(View.GONE);
-                                                viewFlipper.setVisibility(View.VISIBLE);
-                                            }
-                                            autoMarqueeTextView.setText(string);
-                                            autoMarqueeTextView.setEllipsize(null);
-                                            new Thread(() -> {
-                                                try {
-                                                    Thread.sleep(1000);
-                                                } catch (InterruptedException e) {
-                                                }
-                                                hAMT.sendMessage(hAMT.obtainMessage());
-                                            }).start();
-                                            if (config.getLyricWidth() == -1) {
-                                                TextPaint paint2 = autoMarqueeTextView.getPaint();
-                                                if (config.getLyricMaxWidth() == -1 || ((int) paint2.measureText(string)) + 6 <= (dw * config.getLyricMaxWidth()) / 100) {
-                                                    autoMarqueeTextView.setWidth(((int) paint2.measureText(string)) + 6);
-                                                    autoMarqueeTextView2.setWidth(((int) paint2.measureText(string)) + 6);
-                                                    autoMarqueeTextView3.setWidth(((int) paint2.measureText(string)) + 6);
-                                                    cTextView.setLayoutParams(new LinearLayout.LayoutParams(((int) paint2.measureText(string)) + 6, measuredHeight, (float) 19));
-                                                } else {
-                                                    autoMarqueeTextView.setWidth((dw * config.getLyricMaxWidth()) / 100);
-                                                    autoMarqueeTextView2.setWidth((dw * config.getLyricMaxWidth()) / 100);
-                                                    autoMarqueeTextView3.setWidth((dw * config.getLyricMaxWidth()) / 100);
-                                                    cTextView.setLayoutParams(new LinearLayout.LayoutParams((dw * config.getLyricMaxWidth()) / 100, measuredHeight, (float) 19));
-                                                }
-                                            } else {
-                                                autoMarqueeTextView.setWidth((dw * config.getLyricWidth()) / 100);
-                                                autoMarqueeTextView2.setWidth((dw * config.getLyricWidth()) / 100);
-                                                autoMarqueeTextView3.setWidth((dw * config.getLyricWidth()) / 100);
-                                                cTextView.setLayoutParams(new LinearLayout.LayoutParams((dw * config.getLyricWidth()) / 100, measuredHeight, (float) 19));
-                                            }
-                                        }
-                                        if (!config.getLyricAnim().equals("旋转")) {
-                                            viewFlipper.setVisibility(View.VISIBLE);
-                                            autoMarqueeTextView3.setVisibility(View.GONE);
-                                            cTextView.setVisibility(View.GONE);
-                                        }
-                                        clock.setLayoutParams(new LinearLayout.LayoutParams(0, 0));
-                                        return;
-                                    }
-                                    textView2.setCompoundDrawables(null, null, null, null);
-                                    gifView.setVisibility(View.GONE);
-                                    gifView.setMovieResource("");
-                                    clock.setLayoutParams(new LinearLayout.LayoutParams(-2, -2, (float) 17));
-                                    clock.setLayoutParams(new LinearLayout.LayoutParams(-2, -2));
-                                    viewFlipper.setVisibility(View.GONE);
-                                    autoMarqueeTextView3.setVisibility(View.GONE);
-                                    cTextView.setVisibility(View.GONE);
-                                    // TODO 是否显示图标 不知道MiuiStatusBarManager在哪下 未实现
-//                                if (config.getHideNoti().booleanValue() && !MiuiStatusBarManager.isShowNotificationIcon(application)) {
-//                                    MiuiStatusBarManager.setShowNotificationIcon(application, true);
-//                                }
+                            Handler lryciUpdate = new Handler(message -> {
+                                Config config;
+                                if (message.obj == null) {
+                                    config = new Config();
+                                } else {
+                                    config = (Config) message.obj;
                                 }
-                            };
+                                Config2 config2 = new Config2();
+                                String string = message.getData().getString(KEY_LYRIC);
+                                if (!string.equals("")) {
+                                    if (new File(iconPath).exists()) {
+                                        gifView.setVisibility(View.GONE);
+                                        gifView.setMovieResource("");
+                                    } else {
+                                        textView2.setCompoundDrawables(null, null, null, null);
+                                        if (config2.getIcon().equals("自定义")) {
+                                            if (new File(PATH + "icon.gif").exists()) {
+                                                gifView.setVisibility(View.VISIBLE);
+                                                gifView.setMovieResource(PATH + "icon.gif");
+                                            } else {
+                                                gifView.setVisibility(View.GONE);
+                                                gifView.setMovieResource("");
+                                            }
+                                        }
+                                    }
+                                    int i = 0;
+                                    switch (config.getLyricAnim()) {
+                                        case "上滑":
+                                            i = 1;
+                                            break;
+                                        case "下滑":
+                                            i = 2;
+                                            break;
+                                        case "左滑":
+                                            i = 3;
+                                            break;
+                                        case "右滑":
+                                            i = 4;
+                                            break;
+                                        case "随机":
+                                            i = ((int) (Math.random() * ((double) 4))) + 1;
+                                            break;
+                                    }
+                                    if (i == 0) {
+                                        viewFlipper.setInAnimation(null);
+                                        viewFlipper.setOutAnimation(null);
+                                    } else {
+                                        viewFlipper.setInAnimation(new AnimationTools().translateIn(i));
+                                        viewFlipper.setOutAnimation(new AnimationTools().translateOut(i));
+                                    }
+                                    if (viewFlipper.getDisplayedChild() == 0 && !string.equals(autoMarqueeTextView.getText().toString())) {
+                                        // TODO 是否显示图标 不知道MiuiStatusBarManager在哪下 未实现
+                                        // if (config.getHideNoti() && MiuiStatusBarManager.isShowNotificationIcon(application)) {
+                                        //     MiuiStatusBarManager.setShowNotificationIcon(application, false);
+                                        // }
+                                        viewFlipper.showNext();
+                                        if (config.getLyricAnim().equals("旋转")) {
+                                            thread.interrupt();
+                                            autoMarqueeTextView3.setEllipsize(null);
+                                            autoMarqueeTextView3.setText(string);
+                                            autoMarqueeTextView3.setVisibility(View.GONE);
+                                            cTextView.setVisibility(View.VISIBLE);
+                                            cTextView.setText(string, application, measuredHeight, clock.getTextSize(), clock.getTypeface(), clock.getTextColors());
+                                            new Thread(() -> {
+                                                try {
+                                                    Thread.sleep(1500);
+                                                    hAMTC.sendMessage(hAMTC.obtainMessage());
+                                                } catch (InterruptedException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }).start();
+                                            viewFlipper.setVisibility(View.GONE);
+                                        } else {
+                                            cTextView.setVisibility(View.GONE);
+                                            viewFlipper.setVisibility(View.VISIBLE);
+                                        }
+                                        autoMarqueeTextView2.setText(string);
+                                        autoMarqueeTextView2.setEllipsize(null);
+                                        new Thread(() -> {
+                                            try {
+                                                Thread.sleep(1000);
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
+                                            }
+                                            hAMT2.sendMessage(hAMT2.obtainMessage());
+                                        }).start();
+                                        if (config.getLyricWidth() == -1) {
+                                            TextPaint paint1 = autoMarqueeTextView2.getPaint();
+                                            if (config.getLyricMaxWidth() == -1 || ((int) paint1.measureText(string)) + 6 <= (dw * config.getLyricMaxWidth()) / 100) {
+                                                autoMarqueeTextView.setWidth(((int) paint1.measureText(string)) + 6);
+                                                autoMarqueeTextView2.setWidth(((int) paint1.measureText(string)) + 6);
+                                                autoMarqueeTextView3.setWidth(((int) paint1.measureText(string)) + 6);
+                                                cTextView.setLayoutParams(new LinearLayout.LayoutParams(((int) paint1.measureText(string)) + 6, measuredHeight, (float) 19));
+                                            } else {
+                                                autoMarqueeTextView.setWidth((dw * config.getLyricMaxWidth()) / 100);
+                                                autoMarqueeTextView2.setWidth((dw * config.getLyricMaxWidth()) / 100);
+                                                autoMarqueeTextView3.setWidth((dw * config.getLyricMaxWidth()) / 100);
+                                                cTextView.setLayoutParams(new LinearLayout.LayoutParams((dw * config.getLyricMaxWidth()) / 100, measuredHeight, (float) 19));
+                                            }
+                                        } else {
+                                            autoMarqueeTextView.setWidth((dw * config.getLyricWidth()) / 100);
+                                            autoMarqueeTextView2.setWidth((dw * config.getLyricWidth()) / 100);
+                                            autoMarqueeTextView3.setWidth((dw * config.getLyricWidth()) / 100);
+                                            cTextView.setLayoutParams(new LinearLayout.LayoutParams((dw * config.getLyricWidth()) / 100, measuredHeight, (float) 19));
+                                        }
+                                    } else if (viewFlipper.getDisplayedChild() == 1 && !string.equals(autoMarqueeTextView2.getText().toString())) {
+                                        // TODO 是否显示图标 不知道MiuiStatusBarManager在哪下 未实现
+                                        // if (config.getHideNoti() && MiuiStatusBarManager.isShowNotificationIcon(application)) {
+                                        //     MiuiStatusBarManager.setShowNotificationIcon(application, false);
+                                        // }
+                                        viewFlipper.showNext();
+                                        if (config.getLyricAnim().equals("旋转")) {
+                                            thread.interrupt();
+                                            autoMarqueeTextView3.setEllipsize(null);
+                                            autoMarqueeTextView3.setText(string);
+                                            autoMarqueeTextView3.setVisibility(View.GONE);
+                                            cTextView.setVisibility(View.VISIBLE);
+                                            cTextView.setText(string, application, measuredHeight, clock.getTextSize(), clock.getTypeface(), clock.getTextColors());
+                                            new Thread(() -> {
+                                                try {
+                                                    Thread.sleep(1500);
+                                                    hAMTC.sendMessage(hAMTC.obtainMessage());
+                                                } catch (InterruptedException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }).start();
+                                            viewFlipper.setVisibility(View.GONE);
+                                        } else {
+                                            cTextView.setVisibility(View.GONE);
+                                            viewFlipper.setVisibility(View.VISIBLE);
+                                        }
+                                        autoMarqueeTextView.setText(string);
+                                        autoMarqueeTextView.setEllipsize(null);
+                                        new Thread(() -> {
+                                            try {
+                                                Thread.sleep(1000);
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
+                                            }
+                                            hAMT.sendMessage(hAMT.obtainMessage());
+                                        }).start();
+                                        if (config.getLyricWidth() == -1) {
+                                            TextPaint paint2 = autoMarqueeTextView.getPaint();
+                                            if (config.getLyricMaxWidth() == -1 || ((int) paint2.measureText(string)) + 6 <= (dw * config.getLyricMaxWidth()) / 100) {
+                                                autoMarqueeTextView.setWidth(((int) paint2.measureText(string)) + 6);
+                                                autoMarqueeTextView2.setWidth(((int) paint2.measureText(string)) + 6);
+                                                autoMarqueeTextView3.setWidth(((int) paint2.measureText(string)) + 6);
+                                                cTextView.setLayoutParams(new LinearLayout.LayoutParams(((int) paint2.measureText(string)) + 6, measuredHeight, (float) 19));
+                                            } else {
+                                                autoMarqueeTextView.setWidth((dw * config.getLyricMaxWidth()) / 100);
+                                                autoMarqueeTextView2.setWidth((dw * config.getLyricMaxWidth()) / 100);
+                                                autoMarqueeTextView3.setWidth((dw * config.getLyricMaxWidth()) / 100);
+                                                cTextView.setLayoutParams(new LinearLayout.LayoutParams((dw * config.getLyricMaxWidth()) / 100, measuredHeight, (float) 19));
+                                            }
+                                        } else {
+                                            autoMarqueeTextView.setWidth((dw * config.getLyricWidth()) / 100);
+                                            autoMarqueeTextView2.setWidth((dw * config.getLyricWidth()) / 100);
+                                            autoMarqueeTextView3.setWidth((dw * config.getLyricWidth()) / 100);
+                                            cTextView.setLayoutParams(new LinearLayout.LayoutParams((dw * config.getLyricWidth()) / 100, measuredHeight, (float) 19));
+                                        }
+                                    }
+                                    if (!config.getLyricAnim().equals("旋转")) {
+                                        viewFlipper.setVisibility(View.VISIBLE);
+                                        autoMarqueeTextView3.setVisibility(View.GONE);
+                                        cTextView.setVisibility(View.GONE);
+                                    }
+                                    clock.setLayoutParams(new LinearLayout.LayoutParams(0, 0));
+                                    return false;
+                                }
+                                textView2.setCompoundDrawables(null, null, null, null);
+                                gifView.setVisibility(View.GONE);
+                                gifView.setMovieResource("");
+                                clock.setLayoutParams(new LinearLayout.LayoutParams(-2, -2, (float) 17));
+                                clock.setLayoutParams(new LinearLayout.LayoutParams(-2, -2));
+                                viewFlipper.setVisibility(View.GONE);
+                                autoMarqueeTextView3.setVisibility(View.GONE);
+                                cTextView.setVisibility(View.GONE);
+                                // TODO 是否显示图标 不知道MiuiStatusBarManager在哪下 未实现
+                                // if (config.getHideNoti().booleanValue() && !MiuiStatusBarManager.isShowNotificationIcon(application)) {
+                                //     MiuiStatusBarManager.setShowNotificationIcon(application, true);
+                                // }
+                                return true;
+                            });
 
                             new Timer().schedule(
                                     new TimerTask() {
@@ -409,8 +444,6 @@ public class MainHook implements IXposedHookLoadPackage {
                                         String fanse = "关闭";
                                         boolean fs = true;
                                         String icon = "关闭";
-                                        String iconPath = "";
-                                        String lyric = "";
                                         boolean lyricOff = false;
                                         boolean lyricService = false;
                                         int lyricSpeed = 0;
@@ -424,16 +457,15 @@ public class MainHook implements IXposedHookLoadPackage {
                                                     boolean z2 = this.b | (viewFlipper.getVisibility() != View.GONE);
                                                     z = autoMarqueeTextView3.getVisibility() != View.GONE;
                                                     if (z2 || z) {
-                                                        setlyric("");
                                                         XposedBridge.log("播放器关闭，清除歌词");
-                                                        Message obtainMessage = handler1.obtainMessage();
+                                                        Message obtainMessage = lryciUpdate.obtainMessage();
                                                         obtainMessage.obj = this.config;
                                                         Bundle bundle = new Bundle();
                                                         bundle.putString(KEY_LYRIC, "");
                                                         obtainMessage.setData(bundle);
-                                                        handler1.sendMessage(obtainMessage);
-                                                        this.lyric = "";
-                                                        this.temp = this.lyric;
+                                                        lryciUpdate.sendMessage(obtainMessage);
+                                                        lyric = "";
+                                                        this.temp = lyric;
                                                         this.b = false;
                                                     }
                                                 } else {
@@ -442,14 +474,13 @@ public class MainHook implements IXposedHookLoadPackage {
                                                     this.config = new Config();
                                                     this.config2 = new Config2();
                                                     this.icon = this.config2.getIcon();
-                                                    this.iconPath = this.config2.getIconPath();
                                                     this.fanse = this.config.getFanse();
                                                     this.lyricService = this.config.getLyricService();
                                                     this.lyricOff = !this.config.getLyricOff() || audioManager.isMusicActive();
                                                 }
                                                 this.count = 0;
                                             }
-                                            if (this.b && !this.lyric.equals("")) {
+                                            if (this.b && !lyric.equals("")) {
                                                 if (!(clock.getTextColors() == null || this.color == clock.getTextColors())) {
                                                     autoMarqueeTextView.setTextColor(clock.getTextColors());
                                                     autoMarqueeTextView2.setTextColor(clock.getTextColors());
@@ -459,14 +490,14 @@ public class MainHook implements IXposedHookLoadPackage {
                                                     this.fs = true;
                                                 }
                                                 if (this.config2 != null && !this.icon.equals("关闭") && this.fs) {
-                                                    if (new File(this.iconPath).exists()) {
-                                                        Drawable createFromPath = Drawable.createFromPath(this.iconPath);
+                                                    if (new File(iconPath).exists()) {
+                                                        Drawable createFromPath = Drawable.createFromPath(iconPath);
                                                         Drawable drawable = createFromPath;
                                                         createFromPath.setBounds(0, 0, (int) clock.getTextSize(), (int) clock.getTextSize());
                                                         if (this.fanse.equals("模式一")) {
-                                                            drawable = fanse(drawable, !isBri(clock.getTextColors().getDefaultColor()), true);
+                                                            drawable = fanse(drawable, !isBri(clock.getTextColors().getDefaultColor()));
                                                         } else if (this.fanse.equals("模式二")) {
-                                                            drawable = fanse(drawable, isBri(clock.getTextColors().getDefaultColor()), true);
+                                                            drawable = fanse(drawable, isBri(clock.getTextColors().getDefaultColor()));
                                                         }
                                                         Message obtainMessage2 = hT.obtainMessage();
                                                         obtainMessage2.obj = drawable;
@@ -476,31 +507,28 @@ public class MainHook implements IXposedHookLoadPackage {
                                                 }
                                             }
                                             if (this.b && this.lyricSpeed == 10) {
-                                                this.lyric = LyricTools.getlyric();
                                                 this.lyricSpeed = 0;
-                                                if (!this.lyric.equals("") && this.lyricService && this.lyricOff) {
-                                                    this.lyric = LyricTools.getlyric();
-                                                    if (!this.temp.equals(this.lyric)) {
-                                                        Message obtainMessage3 = handler1.obtainMessage();
+                                                if (!lyric.equals("") && this.lyricService && this.lyricOff) {
+                                                    if (!this.temp.equals(lyric)) {
+                                                        Message obtainMessage3 = lryciUpdate.obtainMessage();
                                                         obtainMessage3.obj = this.config;
                                                         Bundle bundle2 = new Bundle();
-                                                        bundle2.putString(KEY_LYRIC, this.lyric);
+                                                        bundle2.putString(KEY_LYRIC, lyric);
                                                         obtainMessage3.setData(bundle2);
-                                                        handler1.sendMessage(obtainMessage3);
-                                                        this.temp = this.lyric;
+                                                        lryciUpdate.sendMessage(obtainMessage3);
+                                                        this.temp = lyric;
                                                     }
                                                 } else if (this.b) {
                                                     if ((viewFlipper.getVisibility() != View.GONE) || (autoMarqueeTextView3.getVisibility() != View.GONE)) {
-                                                        setlyric("");
                                                         XposedBridge.log("开关关闭或播放器暂停，清除歌词");
-                                                        Message obtainMessage4 = handler1.obtainMessage();
+                                                        Message obtainMessage4 = lryciUpdate.obtainMessage();
                                                         obtainMessage4.obj = this.config;
                                                         Bundle bundle3 = new Bundle();
                                                         bundle3.putString(KEY_LYRIC, "");
                                                         obtainMessage4.setData(bundle3);
-                                                        handler1.sendMessage(obtainMessage4);
-                                                        this.lyric = "";
-                                                        this.temp = this.lyric;
+                                                        lryciUpdate.sendMessage(obtainMessage4);
+                                                        lyric = "";
+                                                        this.temp = lyric;
                                                         this.b = false;
                                                     }
                                                 }
@@ -519,7 +547,7 @@ public class MainHook implements IXposedHookLoadPackage {
                 break;
             case "com.android.settings":
                 XposedBridge.log("Hook Settings");
-                XposedHelpers.findAndHookMethod(lpparam.classLoader.loadClass("com.android.settings.NotchStatusBarSettings"), "onCreate", Class.forName("android.os.Bundle"), new XC_MethodHook() {
+                XposedHelpers.findAndHookMethod("com.android.settings.NotchStatusBarSettings", lpparam.classLoader, "onCreate", Class.forName("android.os.Bundle"), new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                         super.beforeHookedMethod(param);
@@ -562,8 +590,7 @@ public class MainHook implements IXposedHookLoadPackage {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         super.afterHookedMethod(param);
-                        setIconP("netease");
-                        LyricTools.setlyric(param.args[0].toString());
+                        sendLyric(context, param.args[0].toString(), "netease");
                         musicName = param.args[0].toString();
                         XposedBridge.log("网易云： " + param.args[0].toString());
                     }
@@ -572,7 +599,7 @@ public class MainHook implements IXposedHookLoadPackage {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                         super.beforeHookedMethod(param);
-                        LyricTools.setlyric(param.args[0].toString());
+                        sendLyric(context, param.args[0].toString(), "netease");
                         XposedBridge.log("网易云： " + param.args[0].toString());
                         param.args[0] = musicName;
                         param.setResult(param.args);
@@ -607,13 +634,8 @@ public class MainHook implements IXposedHookLoadPackage {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         super.afterHookedMethod(param);
-                        if (!new Config().getLyricModel().equals("增强模式") || ((HashMap) param.args[0]).values().toArray()[0].equals(LyricTools.getlyric())) {
-                            XposedBridge.log("酷狗音乐:hook到了但没完全hook到");
-                            return;
-                        }
-                        setIconP("kugou");
                         XposedBridge.log("酷狗音乐:" + ((HashMap) param.args[0]).values().toArray()[0]);
-                        LyricTools.setlyric("" + ((HashMap) param.args[0]).values().toArray()[0]);
+                        sendLyric(context, "" + ((HashMap) param.args[0]).values().toArray()[0], "kugou");
                     }
                 });
                 break;
@@ -641,11 +663,8 @@ public class MainHook implements IXposedHookLoadPackage {
                         super.afterHookedMethod(param);
                         if (new Config().getLyricModel().equals("增强模式") && param.args[1] != null) {
                             String str = (String) param.args[1];
-                            if (!str.equals(LyricTools.getlyric())) {
-                                setIconP("kuwo");
-                                LyricTools.setlyric(" " + str);
-                                XposedBridge.log("酷我音乐:" + str);
-                            }
+                            sendLyric(context, " " + str, "kuwo");
+                            XposedBridge.log("酷我音乐:" + str);
                         }
 
                     }
@@ -667,35 +686,27 @@ public class MainHook implements IXposedHookLoadPackage {
                             Field declaredField = findClass.getDeclaredField("a");
                             declaredField.setAccessible(true);
                             String str = (String) declaredField.get(obj);
-                            if (!str.equals(LyricTools.getlyric())) {
-                                setIconP("qqmusic");
-                                LyricTools.setlyric(str);
-                                XposedBridge.log("QQ音乐:" + str);
-                                return;
-                            }
-                            XposedBridge.log("hook到了但没完全hook到");
-                            return;
+                            sendLyric(context, str, "qqmusic");
                         }
-                        XposedBridge.log("hook到了但没完全hook到");
-
                     }
                 });
                 break;
-            case "com.ximalaya.ting.android":
-                XposedHelpers.findAndHookMethod(lpparam.classLoader.loadClass("com.ximalaya.ting.android.main.playpage.fragment.PlayHistoryFragment"), "initUi", Class.forName("android.os.Bundle"), new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        super.beforeHookedMethod(param);
-                    }
+            // TODO 未测试，暂不启用
+            // case "com.ximalaya.ting.android":
+            //     XposedHelpers.findAndHookMethod(lpparam.classLoader.loadClass("com.ximalaya.ting.android.main.playpage.fragment.PlayHistoryFragment"), "initUi", Class.forName("android.os.Bundle"), new XC_MethodHook() {
+            //         @Override
+            //         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+            //             super.beforeHookedMethod(param);
+            //         }
 
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                        super.afterHookedMethod(param);
-                        param.setResult("测试");
-                        XposedBridge.log("执行" + param.thisObject);
-                    }
-                });
-                break;
+            //         @Override
+            //         protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+            //             super.afterHookedMethod(param);
+            //             param.setResult("测试");
+            //             XposedBridge.log("执行" + param.thisObject);
+            //         }
+            //     });
+            //     break;
             case "com.miui.aod":
                 XposedHelpers.findAndHookMethod(lpparam.classLoader.loadClass("com.miui.aod.AODView"), "makeNormalPanel", new XC_MethodHook() {
                     @Override
@@ -707,7 +718,7 @@ public class MainHook implements IXposedHookLoadPackage {
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         super.afterHookedMethod(param);
                         Config config = new Config();
-                        if (config.getAodLyricService() && !LyricTools.getlyric().equals("")) {
+                        if (config.getAodLyricService() && !lyric.equals("")) {
                             Application currentApplication = AndroidAppHelper.currentApplication();
                             XposedBridge.log("息屏显示" + param.thisObject);
                             FrameLayout frameLayout = (FrameLayout) ((View) XposedHelpers.findField(param.thisObject.getClass(), "mTableModeContainer").get(param.thisObject)).getParent();
@@ -774,105 +785,95 @@ public class MainHook implements IXposedHookLoadPackage {
                             windowManager.getDefaultDisplay().getMetrics(displayMetrics);
                             int dh = displayMetrics.heightPixels;
                             linearLayout.setY(((float) dh) * 0.2f);
-                            Handler handler = new Handler() {
-                                @Override
-                                public void handleMessage(Message message) {
-                                    super.handleMessage(message);
-                                    textView3.setText(simpleDateFormat.format(new Date()));
-                                    if (message.what == 101) {
-                                        String str = LyricTools.getlyric();
-                                        if (str.equals("") || (!config.getAodLyricService())) {
-                                            Iterator<ActivityManager.RunningAppProcessInfo> it = ((ActivityManager) currentApplication.getSystemService(Context.ACTIVITY_SERVICE)).getRunningAppProcesses().iterator();
-                                            while (true) {
-                                                if (it.hasNext()) {
-                                                    ActivityManager.RunningAppProcessInfo next = it.next();
-                                                    if (next.processName.equals("com.miui.aod")) {
-                                                        android.os.Process.killProcess(next.pid);
-                                                        break;
-                                                    }
-                                                } else {
+                            Handler handler = new Handler(message -> {
+                                textView3.setText(simpleDateFormat.format(new Date()));
+                                if (message.what == 101) {
+                                    String str = lyric;
+                                    if (str.equals("") || (!config.getAodLyricService())) {
+                                        Iterator<ActivityManager.RunningAppProcessInfo> it = ((ActivityManager) currentApplication.getSystemService(Context.ACTIVITY_SERVICE)).getRunningAppProcesses().iterator();
+                                        while (true) {
+                                            if (it.hasNext()) {
+                                                ActivityManager.RunningAppProcessInfo next = it.next();
+                                                if (next.processName.equals("com.miui.aod")) {
+                                                    android.os.Process.killProcess(next.pid);
                                                     break;
                                                 }
+                                            } else {
+                                                break;
                                             }
                                         }
-                                        textView2.setText(config.getSign());
-                                        TextPaint paint = scrollTextView.getPaint();
-                                        new LinearGradient((float) 0, (float) 0, (float) scrollTextView.getWidth(), (float) scrollTextView.getHeight(), new int[]{-65536, -16711936, -16776961}, null, Shader.TileMode.CLAMP);
-                                        scrollTextView.setWidth(((int) paint.measureText(str)) + 6);
-                                        if (!str.equals(scrollTextView.getText())) {
-                                            scrollTextView.setText(str);
-                                        }
+                                    }
+                                    textView2.setText(config.getSign());
+                                    TextPaint paint = scrollTextView.getPaint();
+                                    new LinearGradient((float) 0, (float) 0, (float) scrollTextView.getWidth(), (float) scrollTextView.getHeight(), new int[]{-65536, -16711936, -16776961}, null, Shader.TileMode.CLAMP);
+                                    scrollTextView.setWidth(((int) paint.measureText(str)) + 6);
+                                    if (!str.equals(scrollTextView.getText())) {
+                                        scrollTextView.setText(str);
                                     }
                                 }
-                            };
+                                return true;
+                            });
                             new Thread(() -> {
                                 while (true) {
                                     try {
                                         Thread.sleep(500);
                                     } catch (InterruptedException e) {
+                                        e.printStackTrace();
                                     }
                                     Message message = new Message();
                                     message.what = 101;
                                     handler.sendMessage(message);
                                 }
                             }).start();
-                            Handler handler1 = new Handler() {
-                                @Override
-                                public void handleMessage(Message message) {
-                                    super.handleMessage(message);
-                                    linearLayout.setY((float) message.arg1);
-                                }
-                            };
-                            Handler handler2 = new Handler() {
-                                @Override
-                                public void handleMessage(Message message) {
-                                    super.handleMessage(message);
-                                    int i = 0;
-                                    while (true) {
-                                        if (!(i < 2) && !(i > 5)) {
-                                            int i2 = (dh * i) / 10;
-                                            Timer timer = new Timer();
-                                            timer.schedule(new TimerTask() {
-                                                @Override
-                                                public void run() {
-                                                    if (((int) linearLayout.getY()) < i2) {
-                                                        Message message = new Message();
-                                                        message.what = 101;
-                                                        message.arg1 = ((int) linearLayout.getY()) + 1;
-                                                        handler1.sendMessage(message);
-                                                    } else if (((int) linearLayout.getY()) > i2) {
-                                                        Message message2 = new Message();
-                                                        message2.what = 101;
-                                                        message2.arg1 = ((int) linearLayout.getY()) - 1;
-                                                        handler1.sendMessage(message2);
-                                                    } else {
-                                                        timer.cancel();
-                                                    }
+                            Handler handler1 = new Handler(message -> {
+                                linearLayout.setY((float) message.arg1);
+                                return true;
+                            });
+                            Handler handler2 = new Handler(message -> {
+                                int i = 0;
+                                while (true) {
+                                    if (!(i < 2) && !(i > 5)) {
+                                        int i2 = (dh * i) / 10;
+                                        Timer timer = new Timer();
+                                        timer.schedule(new TimerTask() {
+                                            @Override
+                                            public void run() {
+                                                if (((int) linearLayout.getY()) < i2) {
+                                                    Message message = new Message();
+                                                    message.what = 101;
+                                                    message.arg1 = ((int) linearLayout.getY()) + 1;
+                                                    handler1.sendMessage(message);
+                                                } else if (((int) linearLayout.getY()) > i2) {
+                                                    Message message2 = new Message();
+                                                    message2.what = 101;
+                                                    message2.arg1 = ((int) linearLayout.getY()) - 1;
+                                                    handler1.sendMessage(message2);
+                                                } else {
+                                                    timer.cancel();
                                                 }
-                                            }, 0, 1);
-                                            return;
-                                        }
-                                        i = (int) (Math.random() * ((double) 10));
+                                            }
+                                        }, 0, 1);
+                                        return true;
                                     }
+                                    i = (int) (Math.random() * ((double) 10));
                                 }
-                            };
+                            });
                             new Thread(() -> {
                                 while (new Config().getSrcService()) {
                                     try {
                                         Thread.sleep(60000);
                                     } catch (InterruptedException e) {
+                                        e.printStackTrace();
                                     }
                                     Message message = new Message();
                                     message.what = 101;
                                     handler2.sendMessage(message);
                                 }
                             }).start();
-                            Handler handler3 = new Handler() {
-                                public void handleMessage(Message message) {
-                                    super.handleMessage(message);
-                                    gifView.setMovieResource(PATH + "icon7.gif");
-                                }
-                            };
+                            Handler handler3 = new Handler(message -> {
+                                gifView.setMovieResource(PATH + "icon7.gif");
+                                return true;
+                            });
                             new Thread(() -> {
                                 Message message = new Message();
                                 message.what = 101;
@@ -898,21 +899,11 @@ public class MainHook implements IXposedHookLoadPackage {
         return false;
     }
 
-    public void setlyric(String str) {
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msbl");
-            fileOutputStream.write(str.getBytes());
-            fileOutputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static Boolean isBri(int i) {
         return ColorUtils.calculateLuminance(i) >= 0.5d;
     }
 
-    public static Drawable fanse(Drawable drawable, Boolean bool, Boolean bool2) {
+    public static Drawable fanse(Drawable drawable, Boolean bool) {
         ColorMatrix colorMatrix = new ColorMatrix();
         if (bool) {
             colorMatrix.set(NEGATIVE);
@@ -927,13 +918,10 @@ public class MainHook implements IXposedHookLoadPackage {
             BufferedReader bufferedReader2 = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec("getprop ro.miui.ui.version.name").getInputStream()), 1024);
             bufferedReader = bufferedReader2;
             String readLine = bufferedReader2.readLine();
-            bufferedReader.close();
-            if (bufferedReader != null) {
-                try {
-                    bufferedReader.close();
-                } catch (IOException e) {
-                    XposedBridge.log("无法获取UI版本！");
-                }
+            try {
+                bufferedReader.close();
+            } catch (IOException e) {
+                XposedBridge.log("无法获取UI版本！");
             }
             return readLine;
         } catch (IOException e2) {
@@ -959,22 +947,8 @@ public class MainHook implements IXposedHookLoadPackage {
         }
     }
 
-    public void setIconP(String str) {
-        Config2 config2 = new Config2();
-        if (!this.iconM.equals(config2.getIcon())) {
-            switch (config2.getIcon()) {
-                case "关闭":
-                    config2.setIconPath(PATH + "夏.png");
-                    break;
-                case "自动":
-                    config2.setIconPath(PATH + str + ".png");
-                    break;
-                case "自定义":
-                    config2.setIconPath(PATH + "icon.png");
-                    break;
-            }
-        }
-        this.iconM = config2.getIcon();
+    public void sendLyric(Context context, String lyric, String icon) {
+        context.sendBroadcast(new Intent().setAction("Lyric_Server").putExtra("Lyric_Data", lyric).putExtra("Lyric_Icon", icon));
     }
 
 
