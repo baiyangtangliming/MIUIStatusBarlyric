@@ -1,4 +1,4 @@
-package cn.fkj233.hook.miuistatusbarlrcy;
+package cn.fkj233.hook.miuistatusbarlyric;
 
 import android.content.Context;
 import android.content.Intent;
@@ -47,7 +47,6 @@ public class SettingsActivity extends AppCompatActivity {
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
         private Config config;
-        private Config2 config2;
         CheckBoxPreference hideNoti;
         ListPreference icon;
         ListPreference iconFanse;
@@ -70,7 +69,6 @@ public class SettingsActivity extends AppCompatActivity {
             init();
             initIcon(getContext());
             this.config = new Config();
-            this.config2 = new Config2();
 
             // 歌词总开关
             this.lyricService = findPreference("lyricService");
@@ -151,9 +149,9 @@ public class SettingsActivity extends AppCompatActivity {
             strArr[2] = "自定义";
             this.icon.setEntries(strArr);
             this.icon.setEntryValues(strArr);
-            this.icon.setSummary(this.config2.getIcon().equals("") ? "关闭" : this.config2.getIcon());
+            this.icon.setSummary(this.config.getIcon().equals("") ? "关闭" : this.config.getIcon());
             this.icon.setOnPreferenceChangeListener((preference, newValue) -> {
-                config2.setIcon(newValue.toString());
+                config.setIcon(newValue.toString());
                 this.icon.setSummary(newValue.toString());
                 return true;
             });
@@ -203,7 +201,6 @@ public class SettingsActivity extends AppCompatActivity {
             this.hideNoti = findPreference("hideNoti");
             assert this.hideNoti != null;
             this.hideNoti.setChecked(this.config.getHideNoti());
-            this.hideNoti.setEnabled(false);
             this.hideNoti.setOnPreferenceChangeListener((preference, newValue) -> {
                 config.setHideNoti((Boolean) newValue);
                 return true;
@@ -287,26 +284,26 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         public void initIcon(Context context) {
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "icon.png").exists() && !new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "icon.gif").exists()) {
-                copyAssets(context, "icon/icon.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/icon.png");
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "icon.png").exists() && !new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "icon.gif").exists()) {
+                copyAssets(context, "icon/icon.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/icon.png");
             }
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "icon7.png").exists() && !new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "icon7.gif").exists())
-                copyAssets(context, "icon/icon7.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/icon7.png");
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "kugou.png").exists()) {
-                copyAssets(context, "icon/kugou.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/kugou.png");
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "icon7.png").exists() && !new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "icon7.gif").exists())
+                copyAssets(context, "icon/icon7.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/icon7.png");
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "kugou.png").exists()) {
+                copyAssets(context, "icon/kugou.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/kugou.png");
             }
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "netease.png").exists()) {
-                copyAssets(context, "icon/netease.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/netease.png");
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "netease.png").exists()) {
+                copyAssets(context, "icon/netease.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/netease.png");
             }
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "qqmusic.png").exists()) {
-                copyAssets(context, "icon/qqmusic.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/qqmusic.png");
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "qqmusic.png").exists()) {
+                copyAssets(context, "icon/qqmusic.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/qqmusic.png");
             }
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "kuwo.png").exists()) {
-                copyAssets(context, "icon/kuwo.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/kuwo.png");
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "kuwo.png").exists()) {
+                copyAssets(context, "icon/kuwo.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/kuwo.png");
             }
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", ".nomedia").exists()) {
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", ".nomedia").exists()) {
                 try {
-                    new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", ".nomedia").createNewFile();
+                    new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", ".nomedia").createNewFile();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -373,35 +370,31 @@ public class SettingsActivity extends AppCompatActivity {
 
 
         public void init() {
-            File file = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy");
-            File file3 = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msblConfig");
-            File file4 = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msblConfig2");
+            File file = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric");
+            File file3 = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/.msblConfig");
             if (!file.exists()) {
                 file.mkdirs();
             }
             if (!file3.exists()) {
                 try {
-                    Config config3 = new Config();
+                    Config config = new Config();
                     file3.createNewFile();
-                    config3.setLyricService(true);
-                    config3.setLyricWidth(-1);
-                    config3.setLyricMaxWidth(-1);
-                    config3.setTimeWidth(-1);
-                    config3.setLyricAnim("上滑");
-                    config3.setFanse("关闭");
-                    config3.setAodLyricService(false);
-                    config3.setSrcService(true);
-                    config3.setSign("");
-                    config3.setLyricOff(false);
-                    config3.setLyricModel("增强模式");
-                    config3.setHideNoti(false);
+                    config.setLyricService(true);
+                    config.setLyricWidth(-1);
+                    config.setLyricMaxWidth(-1);
+                    config.setTimeWidth(-1);
+                    config.setLyricAnim("上滑");
+                    config.setFanse("关闭");
+                    config.setAodLyricService(false);
+                    config.setSrcService(true);
+                    config.setSign("");
+                    config.setLyricOff(false);
+                    config.setLyricModel("增强模式");
+                    config.setHideNoti(false);
+                    config.setIcon("关闭");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }
-            if (!file4.exists()) {
-                Config2 config22 = new Config2();
-                config22.setIcon("关闭");
             }
         }
     }

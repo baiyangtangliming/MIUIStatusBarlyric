@@ -1,4 +1,4 @@
-package cn.fkj233.hook.miuistatusbarlrcy;
+package cn.fkj233.hook.miuistatusbarlyric;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -22,6 +22,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import android.app.ActivityManager;
 import android.app.AndroidAppHelper;
 import android.app.Application;
+import android.app.MiuiStatusBarManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -55,7 +56,7 @@ public class MainHook implements IXposedHookLoadPackage {
     private static final String KEY_LYRIC = "lyric";
     private static final float[] NEGATIVE;
     private static String musicName = "";
-    public static String PATH = Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/";
+    public static String PATH = Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/";
     private Context context = null;
     private static String lyric = "";
     private static String iconPath = "";
@@ -90,8 +91,8 @@ public class MainHook implements IXposedHookLoadPackage {
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals("Lyric_Server")) {
                 lyric = intent.getStringExtra("Lyric_Data");
-                Config2 config2 = new Config2();
-                switch (config2.getIcon()) {
+                Config config = new Config();
+                switch (config.getIcon()) {
                     case "自动":
                         iconPath = PATH + intent.getStringExtra("Lyric_Icon") + ".png";
                         break;
@@ -257,7 +258,6 @@ public class MainHook implements IXposedHookLoadPackage {
                                 } else {
                                     config = (Config) message.obj;
                                 }
-                                Config2 config2 = new Config2();
                                 String string = message.getData().getString(KEY_LYRIC);
                                 if (!string.equals("")) {
                                     if (new File(iconPath).exists()) {
@@ -265,7 +265,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                         gifView.setMovieResource("");
                                     } else {
                                         textView2.setCompoundDrawables(null, null, null, null);
-                                        if (config2.getIcon().equals("自定义")) {
+                                        if (config.getIcon().equals("自定义")) {
                                             if (new File(PATH + "icon.gif").exists()) {
                                                 gifView.setVisibility(View.VISIBLE);
                                                 gifView.setMovieResource(PATH + "icon.gif");
@@ -301,10 +301,9 @@ public class MainHook implements IXposedHookLoadPackage {
                                         viewFlipper.setOutAnimation(new AnimationTools().translateOut(i));
                                     }
                                     if (viewFlipper.getDisplayedChild() == 0 && !string.equals(autoMarqueeTextView.getText().toString())) {
-                                        // TODO 是否显示图标 不知道MiuiStatusBarManager在哪下 未实现
-                                        // if (config.getHideNoti() && MiuiStatusBarManager.isShowNotificationIcon(application)) {
-                                        //     MiuiStatusBarManager.setShowNotificationIcon(application, false);
-                                        // }
+                                         if (config.getHideNoti() && MiuiStatusBarManager.isShowNotificationIcon(application)) {
+                                             MiuiStatusBarManager.setShowNotificationIcon(application, false);
+                                         }
                                         viewFlipper.showNext();
                                         if (config.getLyricAnim().equals("旋转")) {
                                             thread.interrupt();
@@ -356,10 +355,9 @@ public class MainHook implements IXposedHookLoadPackage {
                                             cTextView.setLayoutParams(new LinearLayout.LayoutParams((dw * config.getLyricWidth()) / 100, measuredHeight, (float) 19));
                                         }
                                     } else if (viewFlipper.getDisplayedChild() == 1 && !string.equals(autoMarqueeTextView2.getText().toString())) {
-                                        // TODO 是否显示图标 不知道MiuiStatusBarManager在哪下 未实现
-                                        // if (config.getHideNoti() && MiuiStatusBarManager.isShowNotificationIcon(application)) {
-                                        //     MiuiStatusBarManager.setShowNotificationIcon(application, false);
-                                        // }
+                                         if (config.getHideNoti() && MiuiStatusBarManager.isShowNotificationIcon(application)) {
+                                             MiuiStatusBarManager.setShowNotificationIcon(application, false);
+                                         }
                                         viewFlipper.showNext();
                                         if (config.getLyricAnim().equals("旋转")) {
                                             thread.interrupt();
@@ -427,10 +425,9 @@ public class MainHook implements IXposedHookLoadPackage {
                                 viewFlipper.setVisibility(View.GONE);
                                 autoMarqueeTextView3.setVisibility(View.GONE);
                                 cTextView.setVisibility(View.GONE);
-                                // TODO 是否显示图标 不知道MiuiStatusBarManager在哪下 未实现
-                                // if (config.getHideNoti().booleanValue() && !MiuiStatusBarManager.isShowNotificationIcon(application)) {
-                                //     MiuiStatusBarManager.setShowNotificationIcon(application, true);
-                                // }
+                                if (config.getHideNoti() && !MiuiStatusBarManager.isShowNotificationIcon(application)) {
+                                    MiuiStatusBarManager.setShowNotificationIcon(application, true);
+                                }
                                 return true;
                             });
 
@@ -439,7 +436,6 @@ public class MainHook implements IXposedHookLoadPackage {
                                         boolean b = false;
                                         ColorStateList color = null;
                                         Config config = new Config();
-                                        Config2 config2 = new Config2();
                                         int count = 0;
                                         String fanse = "关闭";
                                         boolean fs = true;
@@ -472,8 +468,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                                     this.b = true;
                                                     this.fs = true;
                                                     this.config = new Config();
-                                                    this.config2 = new Config2();
-                                                    this.icon = this.config2.getIcon();
+                                                    this.icon = this.config.getIcon();
                                                     this.fanse = this.config.getFanse();
                                                     this.lyricService = this.config.getLyricService();
                                                     this.lyricOff = !this.config.getLyricOff() || audioManager.isMusicActive();
@@ -489,7 +484,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                                     this.color = clock.getTextColors();
                                                     this.fs = true;
                                                 }
-                                                if (this.config2 != null && !this.icon.equals("关闭") && this.fs) {
+                                                if (this.config != null && !this.icon.equals("关闭") && this.fs) {
                                                     if (new File(iconPath).exists()) {
                                                         Drawable createFromPath = Drawable.createFromPath(iconPath);
                                                         Drawable drawable = createFromPath;

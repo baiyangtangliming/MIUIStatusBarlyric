@@ -1,4 +1,4 @@
-package cn.fkj233.hook.miuistatusbarlrcy;
+package cn.fkj233.hook.miuistatusbarlyric;
 
 
 import org.json.JSONException;
@@ -230,6 +230,30 @@ public class Config {
             return (String) this.config.get("歌词获取模式");
         } catch (JSONException e) {
             return "增强模式";
+        }
+    }
+
+    public void setIcon(String str) {
+        try {
+            this.config.put("图标模式", str);
+            this.temp.put("图标配置", this.config);
+            ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getIcon() {
+        if (this.config == null) {
+            return new Config().getIcon();
+        }
+        try {
+            if (this.config.get("图标模式") == null) {
+                return "关闭";
+            }
+            return (String) this.config.get("图标模式");
+        } catch (JSONException e) {
+            return "关闭";
         }
     }
 }
