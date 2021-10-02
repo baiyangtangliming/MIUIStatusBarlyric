@@ -7,7 +7,7 @@ android {
     buildToolsVersion "30.0.3"
 
     defaultConfig {
-        applicationId "cn.fkj233.hook.miuistatusbarlrcy"
+        applicationId "cn.fkj233.hook.miuistatusbarlyric"
         minSdkVersion 19
         targetSdkVersion 29
         versionCode 1

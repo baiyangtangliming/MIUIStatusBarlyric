@@ -1,7 +1,9 @@
-package cn.fkj233.hook.miuistatusbarlrcy;
+package cn.fkj233.hook.miuistatusbarlyric;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -26,12 +28,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.regex.Pattern;
 
 public class SettingsActivity extends AppCompatActivity {
+    private static SharedPreferences sp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        sp = getSharedPreferences("Lyric_Config", Activity.MODE_WORLD_READABLE);
         setContentView(R.layout.settings_activity);
         if (savedInstanceState == null) {
             getSupportFragmentManager()
@@ -46,8 +51,6 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
-        private Config config;
-        private Config2 config2;
         CheckBoxPreference hideNoti;
         ListPreference icon;
         ListPreference iconFanse;
@@ -61,7 +64,7 @@ public class SettingsActivity extends AppCompatActivity {
         EditTextPreference defSign;
         CheckBoxPreference srcService;
 
-
+        SharedPreferences.Editor editor = sp.edit();
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -69,56 +72,64 @@ public class SettingsActivity extends AppCompatActivity {
             checkPermission();
             init();
             initIcon(getContext());
-            this.config = new Config();
-            this.config2 = new Config2();
 
             // 歌词总开关
             this.lyricService = findPreference("lyricService");
             assert this.lyricService != null;
-            this.lyricService.setChecked(this.config.getLyricService());
+            this.lyricService.setChecked(sp.getBoolean("lyricService", false));
             this.lyricService.setOnPreferenceChangeListener((preference, newValue) -> {
                 lyricWidth.setDefaultValue(newValue);
-                config.setLyricService((Boolean) newValue);
+                editor.putBoolean("lyricService", (Boolean) newValue).commit();
                 return true;
             });
 
             // 歌词宽度
             this.lyricWidth = findPreference("lyricWidth");
             assert this.lyricWidth != null;
-            this.lyricWidth.setSummary(this.config.getLyricWidth() + "%");
-            if (this.config.getLyricWidth() == -1) {
+            this.lyricWidth.setSummary(sp.getInt("lyricWidth", -1) + "%");
+            if (sp.getInt("lyricWidth", -1) == -1) {
                 this.lyricWidth.setSummary("自适应");
             }
             this.lyricWidth.setDialogMessage("(-1~100，-1为自适应)，当前:" + this.lyricWidth.getSummary());
             this.lyricWidth.setOnPreferenceChangeListener((preference, newValue) -> {
-                lyricWidth.setSummary(newValue.toString());
-                lyricWidth.setDefaultValue(newValue);
                 if (newValue.toString().equals("-1")) {
                     lyricWidth.setDialogMessage("(-1~100，-1为自适应)，当前:自适应");
+                    lyricWidth.setSummary(newValue.toString());
+                    lyricWidth.setDefaultValue(newValue);
+                    editor.putInt("lyricWidth", Integer.parseInt(newValue.toString())).commit();
+                } else if (newValue.toString().equals("") || isNumeric(newValue.toString()) || Integer.parseInt(newValue.toString()) < 0 || Integer.parseInt(newValue.toString()) > 100) {
+                    Toast.makeText(requireContext(), "请输入有效值", Toast.LENGTH_SHORT).show();
                 } else {
                     lyricWidth.setDialogMessage("(-1~100，-1为自适应)，当前:" + newValue.toString());
+                    lyricWidth.setSummary(newValue.toString());
+                    lyricWidth.setDefaultValue(newValue);
+                    editor.putInt("lyricWidth", Integer.parseInt(newValue.toString())).commit();
                 }
-                config.setLyricWidth(Integer.parseInt(newValue.toString()));
             return true;
             });
 
             // 歌词最大自适应宽度
             this.lyricMaxWidth = findPreference("lyricMaxWidth");
             assert this.lyricMaxWidth != null;
-            this.lyricMaxWidth.setSummary(this.config.getLyricMaxWidth() + "%");
-            if (this.config.getLyricMaxWidth() == -1) {
+            this.lyricMaxWidth.setSummary(sp.getInt("lyricMaxWidth", -1) + "%");
+            if (sp.getInt("lyricMaxWidth", -1) == -1) {
                 this.lyricMaxWidth.setSummary("关闭");
             }
             this.lyricMaxWidth.setDialogMessage("(-1~100，-1为关闭，仅在歌词宽度为自适应时生效)，当前:" + this.lyricMaxWidth.getSummary());
             this.lyricMaxWidth.setOnPreferenceChangeListener((preference, newValue) -> {
-                lyricMaxWidth.setSummary(newValue.toString());
-                lyricMaxWidth.setDefaultValue(newValue);
                 if (newValue.toString().equals("-1")) {
                     lyricMaxWidth.setDialogMessage("(-1~100，-1为关闭，仅在歌词宽度为自适应时生效)，当前:关闭");
+                    lyricMaxWidth.setSummary(newValue.toString());
+                    lyricMaxWidth.setDefaultValue(newValue);
+                    editor.putInt("lyricMaxWidth", Integer.parseInt(newValue.toString())).commit();
+                } else if (newValue.toString().equals("") || isNumeric(newValue.toString()) || Integer.parseInt(newValue.toString()) < 0 || Integer.parseInt(newValue.toString()) > 100) {
+                    Toast.makeText(requireContext(), "请输入有效值", Toast.LENGTH_SHORT).show();
                 } else {
                     lyricMaxWidth.setDialogMessage("(-1~100，-1为关闭，仅在歌词宽度为自适应时生效)，当前:" + newValue.toString());
+                    lyricMaxWidth.setSummary(newValue.toString());
+                    lyricMaxWidth.setDefaultValue(newValue);
+                    editor.putInt("lyricMaxWidth", Integer.parseInt(newValue.toString())).commit();
                 }
-                config.setLyricMaxWidth(Integer.parseInt(newValue.toString()));
                 return true;
             });
 
@@ -135,10 +146,10 @@ public class SettingsActivity extends AppCompatActivity {
             strArr[6] = "旋转";
             this.lyricAnim.setEntries(strArr);
             this.lyricAnim.setEntryValues(strArr);
-            this.lyricAnim.setSummary(this.config.getLyricAnim().equals("") ? "关闭" : this.config.getLyricAnim());
+            this.lyricAnim.setSummary(sp.getString("lyricAnim", ""));
             this.lyricAnim.setOnPreferenceChangeListener((preference, newValue) -> {
-                this.config.setLyricAnim(newValue.toString());
                 this.lyricAnim.setSummary(newValue.toString());
+                editor.putString("lyricAnim", newValue.toString()).commit();
                 return true;
             });
 
@@ -151,10 +162,10 @@ public class SettingsActivity extends AppCompatActivity {
             strArr[2] = "自定义";
             this.icon.setEntries(strArr);
             this.icon.setEntryValues(strArr);
-            this.icon.setSummary(this.config2.getIcon().equals("") ? "关闭" : this.config2.getIcon());
+            this.icon.setSummary(sp.getString("icon", "关闭"));
             this.icon.setOnPreferenceChangeListener((preference, newValue) -> {
-                config2.setIcon(newValue.toString());
                 this.icon.setSummary(newValue.toString());
+                editor.putString("icon", newValue.toString()).commit();
                 return true;
             });
 
@@ -167,54 +178,45 @@ public class SettingsActivity extends AppCompatActivity {
             strArr[2] = "模式二";
             this.iconFanse.setEntries(strArr);
             this.iconFanse.setEntryValues(strArr);
-            if (this.config.getFanse().equals("")) {
-                iconFanse.setSummary("关闭");
-            } else {
-                iconFanse.setSummary(this.config.getFanse());
-            }
+            iconFanse.setSummary(sp.getString("iconFanse", "关闭"));
             this.iconFanse.setOnPreferenceChangeListener((preference, newValue) -> {
-                config.setFanse(newValue.toString());
                 this.iconFanse.setSummary(newValue.toString());
+                editor.putString("iconFanse", newValue.toString()).commit();
                 return true;
             });
 
             // 歌词获取模式
             this.lyricModel = findPreference("lyricModel");
             assert this.lyricModel != null;
-            strArr = new String[2];
-            strArr[0] = "通用模式";
-            strArr[1] = "增强模式";
+            strArr = new String[1];
+            strArr[0] = "增强模式";
             this.lyricModel.setEntries(strArr);
             this.lyricModel.setEntryValues(strArr);
             this.lyricModel.setEnabled(false);
-            this.lyricModel.setSummary(this.config.getLyricModel());
-            if (this.lyricModel.getSummary().equals("通用模式")) {
-                this.lyricModel.setValueIndex(0);
-            } else {
-                this.lyricModel.setValueIndex(1);
-            }
+            this.lyricModel.setSummary(sp.getString("lyricModel", ""));
+            this.lyricModel.setValueIndex(0);
             this.lyricModel.setOnPreferenceChangeListener((preference, newValue) -> {
-                config.setLyricModel(newValue.toString());
                 this.lyricModel.setSummary(newValue.toString());
+                editor.putString("lyricModel", newValue.toString()).commit();
                 return true;
             });
 
             // 隐藏通知图标
             this.hideNoti = findPreference("hideNoti");
             assert this.hideNoti != null;
-            this.hideNoti.setChecked(this.config.getHideNoti());
+            this.hideNoti.setChecked(sp.getBoolean("hideNoti", false));
             this.hideNoti.setEnabled(false);
             this.hideNoti.setOnPreferenceChangeListener((preference, newValue) -> {
-                config.setHideNoti((Boolean) newValue);
+                editor.putBoolean("hideNoti", (Boolean) newValue).commit();
                 return true;
             });
 
             // 暂停关闭歌词
             this.lyricOff = findPreference("lyricOff");
             assert this.lyricOff != null;
-            this.lyricOff.setChecked(this.config.getLyricOff());
+            this.lyricOff.setChecked(sp.getBoolean("lyricOff", false));
             this.lyricOff.setOnPreferenceChangeListener((preference, newValue) -> {
-                config.setLyricOff((Boolean) newValue);
+                editor.putBoolean("lyricOff", (Boolean) newValue).commit();
                 return true;
             });
 
@@ -234,29 +236,29 @@ public class SettingsActivity extends AppCompatActivity {
             // 息屏显示开关
             this.aodLyricService = findPreference("aodLyricService");
             assert this.aodLyricService != null;
-            this.aodLyricService.setChecked(this.config.getAodLyricService());
+            this.aodLyricService.setChecked(sp.getBoolean("aodLyricService", false));
             this.aodLyricService.setOnPreferenceChangeListener((preference, newValue) -> {
-                this.config.setAodLyricService((Boolean) newValue);
+                editor.putBoolean("aodLyricService", (Boolean) newValue).commit();
                 return true;
             });
 
             // 防烧屏
             this.srcService = findPreference("proSrc");
             assert this.srcService != null;
-            this.srcService.setChecked(this.config.getSrcService());
+            this.srcService.setChecked(sp.getBoolean("proSrc", false));
             this.srcService.setOnPreferenceChangeListener((preference, newValue) -> {
-                this.config.setSrcService((Boolean) newValue);
+                editor.putBoolean("proSrc", (Boolean) newValue).commit();
                 return true;
             });
 
             // 个性签名
             this.defSign = findPreference("defSign");
             assert this.defSign != null;
-            this.defSign.setSummary(this.config.getSign());
+            this.defSign.setSummary(sp.getString("defSign", ""));
             this.defSign.setDialogMessage("");
             this.defSign.setOnPreferenceChangeListener((preference, newValue) -> {
-                this.config.setSign(newValue.toString());
                 this.defSign.setSummary(newValue.toString());
+                editor.putString("defSign", newValue.toString()).commit();
                 return true;
             });
 
@@ -287,26 +289,26 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         public void initIcon(Context context) {
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "icon.png").exists() && !new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "icon.gif").exists()) {
-                copyAssets(context, "icon/icon.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/icon.png");
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "icon.png").exists() && !new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "icon.gif").exists()) {
+                copyAssets(context, "icon/icon.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/icon.png");
             }
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "icon7.png").exists() && !new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "icon7.gif").exists())
-                copyAssets(context, "icon/icon7.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/icon7.png");
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "kugou.png").exists()) {
-                copyAssets(context, "icon/kugou.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/kugou.png");
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "icon7.png").exists() && !new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "icon7.gif").exists())
+                copyAssets(context, "icon/icon7.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/icon7.png");
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "kugou.png").exists()) {
+                copyAssets(context, "icon/kugou.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/kugou.png");
             }
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "netease.png").exists()) {
-                copyAssets(context, "icon/netease.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/netease.png");
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "netease.png").exists()) {
+                copyAssets(context, "icon/netease.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/netease.png");
             }
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "qqmusic.png").exists()) {
-                copyAssets(context, "icon/qqmusic.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/qqmusic.png");
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "qqmusic.png").exists()) {
+                copyAssets(context, "icon/qqmusic.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/qqmusic.png");
             }
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", "kuwo.png").exists()) {
-                copyAssets(context, "icon/kuwo.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/kuwo.png");
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "kuwo.png").exists()) {
+                copyAssets(context, "icon/kuwo.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/kuwo.png");
             }
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", ".nomedia").exists()) {
+            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", ".nomedia").exists()) {
                 try {
-                    new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/", ".nomedia").createNewFile();
+                    new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", ".nomedia").createNewFile();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -373,37 +375,16 @@ public class SettingsActivity extends AppCompatActivity {
 
 
         public void init() {
-            File file = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy");
-            File file3 = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msblConfig");
-            File file4 = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/.msblConfig2");
+            File file = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric");
             if (!file.exists()) {
-                file.mkdirs();
-            }
-            if (!file3.exists()) {
-                try {
-                    Config config3 = new Config();
-                    file3.createNewFile();
-                    config3.setLyricService(true);
-                    config3.setLyricWidth(-1);
-                    config3.setLyricMaxWidth(-1);
-                    config3.setTimeWidth(-1);
-                    config3.setLyricAnim("上滑");
-                    config3.setFanse("关闭");
-                    config3.setAodLyricService(false);
-                    config3.setSrcService(true);
-                    config3.setSign("");
-                    config3.setLyricOff(false);
-                    config3.setLyricModel("增强模式");
-                    config3.setHideNoti(false);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (!file4.exists()) {
-                Config2 config22 = new Config2();
-                config22.setIcon("关闭");
+                file.mkdir();
             }
         }
+
+        public boolean isNumeric(String str) {
+            return !Pattern.compile("[0-9]*").matcher(str).matches();
+        }
+
     }
 
 }

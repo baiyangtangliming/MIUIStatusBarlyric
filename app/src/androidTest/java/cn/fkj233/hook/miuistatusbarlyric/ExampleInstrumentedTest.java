@@ -1,4 +1,4 @@
-package cn.fkj233.hook.miuistatusbarlrcy;
+package cn.fkj233.hook.miuistatusbarlyric;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("cn.fkj233.hook.miuistatusbarlrcy", appContext.getPackageName());
+        assertEquals("cn.fkj233.hook.miuistatusbarlyric", appContext.getPackageName());
     }
 }

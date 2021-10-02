@@ -1,4 +1,4 @@
-package cn.fkj233.hook.miuistatusbarlrcy;
+package cn.fkj233.hook.miuistatusbarlyric;
 
 import android.content.Context;
 import android.content.res.ColorStateList;

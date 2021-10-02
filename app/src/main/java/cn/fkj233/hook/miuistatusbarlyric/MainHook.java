@@ -1,4 +1,4 @@
-package cn.fkj233.hook.miuistatusbarlrcy;
+package cn.fkj233.hook.miuistatusbarlyric;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -15,6 +15,7 @@ import java.util.TimerTask;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
@@ -55,10 +56,12 @@ public class MainHook implements IXposedHookLoadPackage {
     private static final String KEY_LYRIC = "lyric";
     private static final float[] NEGATIVE;
     private static String musicName = "";
-    public static String PATH = Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlrcy/";
+    public static String PATH = Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/";
     private Context context = null;
     private static String lyric = "";
     private static String iconPath = "";
+
+    private static XSharedPreferences xSharedPreferences;
 
     static {
         float[] fArr = new float[20];
@@ -85,13 +88,39 @@ public class MainHook implements IXposedHookLoadPackage {
         NEGATIVE = fArr;
     }
 
+    // 获取XSharedPreferences对象
+    public static XSharedPreferences getXSharedPreferences(){
+        if (xSharedPreferences == null) {
+            xSharedPreferences = new XSharedPreferences("cn.fkj233.hook.miuistatusbarlyric", "Lyric_Config");
+            xSharedPreferences.makeWorldReadable();
+        } else {
+            xSharedPreferences.reload();
+        }
+        return xSharedPreferences;
+    }
+
+    // 读取布尔值
+    public static Boolean getXSPSBoolean(String s, Boolean b) {
+        return getXSharedPreferences().getBoolean(s, b);
+    }
+
+    // 读取文本
+    public static String getXSPString(String s, String ss) {
+        return getXSharedPreferences().getString(s, ss);
+    }
+
+    // 读取整数
+    public static Integer getXSPInt(String s, Integer i) {
+        return getXSharedPreferences().getInt(s, i);
+    }
+
+    // 歌词广播接收
     public static class LyricReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals("Lyric_Server")) {
                 lyric = intent.getStringExtra("Lyric_Data");
-                Config2 config2 = new Config2();
-                switch (config2.getIcon()) {
+                switch (getXSPString("icon", "关闭")) {
                     case "自动":
                         iconPath = PATH + intent.getStringExtra("Lyric_Icon") + ".png";
                         break;
@@ -251,13 +280,6 @@ public class MainHook implements IXposedHookLoadPackage {
                             thread.start();
 
                             Handler lryciUpdate = new Handler(message -> {
-                                Config config;
-                                if (message.obj == null) {
-                                    config = new Config();
-                                } else {
-                                    config = (Config) message.obj;
-                                }
-                                Config2 config2 = new Config2();
                                 String string = message.getData().getString(KEY_LYRIC);
                                 if (!string.equals("")) {
                                     if (new File(iconPath).exists()) {
@@ -265,7 +287,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                         gifView.setMovieResource("");
                                     } else {
                                         textView2.setCompoundDrawables(null, null, null, null);
-                                        if (config2.getIcon().equals("自定义")) {
+                                        if (getXSPString("icon", "关闭").equals("自定义")) {
                                             if (new File(PATH + "icon.gif").exists()) {
                                                 gifView.setVisibility(View.VISIBLE);
                                                 gifView.setMovieResource(PATH + "icon.gif");
@@ -276,7 +298,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                         }
                                     }
                                     int i = 0;
-                                    switch (config.getLyricAnim()) {
+                                    switch (getXSPString("lyricAnim", "关闭")) {
                                         case "上滑":
                                             i = 1;
                                             break;
@@ -306,7 +328,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                         //     MiuiStatusBarManager.setShowNotificationIcon(application, false);
                                         // }
                                         viewFlipper.showNext();
-                                        if (config.getLyricAnim().equals("旋转")) {
+                                        if (getXSPString("lyricAnim", "关闭").equals("旋转")) {
                                             thread.interrupt();
                                             autoMarqueeTextView3.setEllipsize(null);
                                             autoMarqueeTextView3.setText(string);
@@ -336,24 +358,24 @@ public class MainHook implements IXposedHookLoadPackage {
                                             }
                                             hAMT2.sendMessage(hAMT2.obtainMessage());
                                         }).start();
-                                        if (config.getLyricWidth() == -1) {
+                                        if (getXSPInt("lyricMaxWidth", -1) == -1) {
                                             TextPaint paint1 = autoMarqueeTextView2.getPaint();
-                                            if (config.getLyricMaxWidth() == -1 || ((int) paint1.measureText(string)) + 6 <= (dw * config.getLyricMaxWidth()) / 100) {
+                                            if (getXSPInt("lyricMaxWidth", -1) == -1 || ((int) paint1.measureText(string)) + 6 <= (dw * getXSPInt("lyricMaxWidth", -1)) / 100) {
                                                 autoMarqueeTextView.setWidth(((int) paint1.measureText(string)) + 6);
                                                 autoMarqueeTextView2.setWidth(((int) paint1.measureText(string)) + 6);
                                                 autoMarqueeTextView3.setWidth(((int) paint1.measureText(string)) + 6);
                                                 cTextView.setLayoutParams(new LinearLayout.LayoutParams(((int) paint1.measureText(string)) + 6, measuredHeight, (float) 19));
                                             } else {
-                                                autoMarqueeTextView.setWidth((dw * config.getLyricMaxWidth()) / 100);
-                                                autoMarqueeTextView2.setWidth((dw * config.getLyricMaxWidth()) / 100);
-                                                autoMarqueeTextView3.setWidth((dw * config.getLyricMaxWidth()) / 100);
-                                                cTextView.setLayoutParams(new LinearLayout.LayoutParams((dw * config.getLyricMaxWidth()) / 100, measuredHeight, (float) 19));
+                                                autoMarqueeTextView.setWidth((dw * getXSPInt("lyricMaxWidth", -1)) / 100);
+                                                autoMarqueeTextView2.setWidth((dw * getXSPInt("lyricMaxWidth", -1)) / 100);
+                                                autoMarqueeTextView3.setWidth((dw * getXSPInt("lyricMaxWidth", -1)) / 100);
+                                                cTextView.setLayoutParams(new LinearLayout.LayoutParams((dw * getXSPInt("lyricMaxWidth", -1)) / 100, measuredHeight, (float) 19));
                                             }
                                         } else {
-                                            autoMarqueeTextView.setWidth((dw * config.getLyricWidth()) / 100);
-                                            autoMarqueeTextView2.setWidth((dw * config.getLyricWidth()) / 100);
-                                            autoMarqueeTextView3.setWidth((dw * config.getLyricWidth()) / 100);
-                                            cTextView.setLayoutParams(new LinearLayout.LayoutParams((dw * config.getLyricWidth()) / 100, measuredHeight, (float) 19));
+                                            autoMarqueeTextView.setWidth((dw * getXSPInt("lyricWidth", -1)) / 100);
+                                            autoMarqueeTextView2.setWidth((dw * getXSPInt("lyricWidth", -1)) / 100);
+                                            autoMarqueeTextView3.setWidth((dw * getXSPInt("lyricWidth", -1)) / 100);
+                                            cTextView.setLayoutParams(new LinearLayout.LayoutParams((dw * getXSPInt("lyricWidth", -1)) / 100, measuredHeight, (float) 19));
                                         }
                                     } else if (viewFlipper.getDisplayedChild() == 1 && !string.equals(autoMarqueeTextView2.getText().toString())) {
                                         // TODO 是否显示图标 不知道MiuiStatusBarManager在哪下 未实现
@@ -361,7 +383,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                         //     MiuiStatusBarManager.setShowNotificationIcon(application, false);
                                         // }
                                         viewFlipper.showNext();
-                                        if (config.getLyricAnim().equals("旋转")) {
+                                        if (getXSPString("lyricAnim", "关闭").equals("旋转")) {
                                             thread.interrupt();
                                             autoMarqueeTextView3.setEllipsize(null);
                                             autoMarqueeTextView3.setText(string);
@@ -391,27 +413,27 @@ public class MainHook implements IXposedHookLoadPackage {
                                             }
                                             hAMT.sendMessage(hAMT.obtainMessage());
                                         }).start();
-                                        if (config.getLyricWidth() == -1) {
+                                        if (getXSPInt("lyricWidth", -1) == -1) {
                                             TextPaint paint2 = autoMarqueeTextView.getPaint();
-                                            if (config.getLyricMaxWidth() == -1 || ((int) paint2.measureText(string)) + 6 <= (dw * config.getLyricMaxWidth()) / 100) {
+                                            if (getXSPInt("lyricMaxWidth", -1) == -1 || ((int) paint2.measureText(string)) + 6 <= (dw * getXSPInt("lyricMaxWidth", -1)) / 100) {
                                                 autoMarqueeTextView.setWidth(((int) paint2.measureText(string)) + 6);
                                                 autoMarqueeTextView2.setWidth(((int) paint2.measureText(string)) + 6);
                                                 autoMarqueeTextView3.setWidth(((int) paint2.measureText(string)) + 6);
                                                 cTextView.setLayoutParams(new LinearLayout.LayoutParams(((int) paint2.measureText(string)) + 6, measuredHeight, (float) 19));
                                             } else {
-                                                autoMarqueeTextView.setWidth((dw * config.getLyricMaxWidth()) / 100);
-                                                autoMarqueeTextView2.setWidth((dw * config.getLyricMaxWidth()) / 100);
-                                                autoMarqueeTextView3.setWidth((dw * config.getLyricMaxWidth()) / 100);
-                                                cTextView.setLayoutParams(new LinearLayout.LayoutParams((dw * config.getLyricMaxWidth()) / 100, measuredHeight, (float) 19));
+                                                autoMarqueeTextView.setWidth((dw * getXSPInt("lyricMaxWidth", -1)) / 100);
+                                                autoMarqueeTextView2.setWidth((dw * getXSPInt("lyricMaxWidth", -1)) / 100);
+                                                autoMarqueeTextView3.setWidth((dw * getXSPInt("lyricMaxWidth", -1)) / 100);
+                                                cTextView.setLayoutParams(new LinearLayout.LayoutParams((dw * getXSPInt("lyricMaxWidth", -1)) / 100, measuredHeight, (float) 19));
                                             }
                                         } else {
-                                            autoMarqueeTextView.setWidth((dw * config.getLyricWidth()) / 100);
-                                            autoMarqueeTextView2.setWidth((dw * config.getLyricWidth()) / 100);
-                                            autoMarqueeTextView3.setWidth((dw * config.getLyricWidth()) / 100);
-                                            cTextView.setLayoutParams(new LinearLayout.LayoutParams((dw * config.getLyricWidth()) / 100, measuredHeight, (float) 19));
+                                            autoMarqueeTextView.setWidth((dw * getXSPInt("lyricWidth", -1)) / 100);
+                                            autoMarqueeTextView2.setWidth((dw * getXSPInt("lyricWidth", -1)) / 100);
+                                            autoMarqueeTextView3.setWidth((dw * getXSPInt("lyricWidth", -1)) / 100);
+                                            cTextView.setLayoutParams(new LinearLayout.LayoutParams((dw * getXSPInt("lyricWidth", -1)) / 100, measuredHeight, (float) 19));
                                         }
                                     }
-                                    if (!config.getLyricAnim().equals("旋转")) {
+                                    if (!getXSPString("lyricAnim", "关闭").equals("旋转")) {
                                         viewFlipper.setVisibility(View.VISIBLE);
                                         autoMarqueeTextView3.setVisibility(View.GONE);
                                         cTextView.setVisibility(View.GONE);
@@ -428,7 +450,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                 autoMarqueeTextView3.setVisibility(View.GONE);
                                 cTextView.setVisibility(View.GONE);
                                 // TODO 是否显示图标 不知道MiuiStatusBarManager在哪下 未实现
-                                // if (config.getHideNoti().booleanValue() && !MiuiStatusBarManager.isShowNotificationIcon(application)) {
+                                // if (config.getHideNoti() && !MiuiStatusBarManager.isShowNotificationIcon(application)) {
                                 //     MiuiStatusBarManager.setShowNotificationIcon(application, true);
                                 // }
                                 return true;
@@ -438,8 +460,6 @@ public class MainHook implements IXposedHookLoadPackage {
                                     new TimerTask() {
                                         boolean b = false;
                                         ColorStateList color = null;
-                                        Config config = new Config();
-                                        Config2 config2 = new Config2();
                                         int count = 0;
                                         String fanse = "关闭";
                                         boolean fs = true;
@@ -459,7 +479,6 @@ public class MainHook implements IXposedHookLoadPackage {
                                                     if (z2 || z) {
                                                         XposedBridge.log("播放器关闭，清除歌词");
                                                         Message obtainMessage = lryciUpdate.obtainMessage();
-                                                        obtainMessage.obj = this.config;
                                                         Bundle bundle = new Bundle();
                                                         bundle.putString(KEY_LYRIC, "");
                                                         obtainMessage.setData(bundle);
@@ -471,12 +490,10 @@ public class MainHook implements IXposedHookLoadPackage {
                                                 } else {
                                                     this.b = true;
                                                     this.fs = true;
-                                                    this.config = new Config();
-                                                    this.config2 = new Config2();
-                                                    this.icon = this.config2.getIcon();
-                                                    this.fanse = this.config.getFanse();
-                                                    this.lyricService = this.config.getLyricService();
-                                                    this.lyricOff = !this.config.getLyricOff() || audioManager.isMusicActive();
+                                                    this.icon = getXSPString("icon", "关闭");
+                                                    this.fanse = getXSPString("iconFanse", "关闭");
+                                                    this.lyricService = getXSPSBoolean("lyricService", false);
+                                                    this.lyricOff = !getXSPSBoolean("lyricOff", false) || audioManager.isMusicActive();
                                                 }
                                                 this.count = 0;
                                             }
@@ -489,7 +506,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                                     this.color = clock.getTextColors();
                                                     this.fs = true;
                                                 }
-                                                if (this.config2 != null && !this.icon.equals("关闭") && this.fs) {
+                                                if (!this.icon.equals("关闭") && this.fs) {
                                                     if (new File(iconPath).exists()) {
                                                         Drawable createFromPath = Drawable.createFromPath(iconPath);
                                                         Drawable drawable = createFromPath;
@@ -511,7 +528,6 @@ public class MainHook implements IXposedHookLoadPackage {
                                                 if (!lyric.equals("") && this.lyricService && this.lyricOff) {
                                                     if (!this.temp.equals(lyric)) {
                                                         Message obtainMessage3 = lryciUpdate.obtainMessage();
-                                                        obtainMessage3.obj = this.config;
                                                         Bundle bundle2 = new Bundle();
                                                         bundle2.putString(KEY_LYRIC, lyric);
                                                         obtainMessage3.setData(bundle2);
@@ -522,7 +538,6 @@ public class MainHook implements IXposedHookLoadPackage {
                                                     if ((viewFlipper.getVisibility() != View.GONE) || (autoMarqueeTextView3.getVisibility() != View.GONE)) {
                                                         XposedBridge.log("开关关闭或播放器暂停，清除歌词");
                                                         Message obtainMessage4 = lryciUpdate.obtainMessage();
-                                                        obtainMessage4.obj = this.config;
                                                         Bundle bundle3 = new Bundle();
                                                         bundle3.putString(KEY_LYRIC, "");
                                                         obtainMessage4.setData(bundle3);
@@ -661,12 +676,11 @@ public class MainHook implements IXposedHookLoadPackage {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         super.afterHookedMethod(param);
-                        if (new Config().getLyricModel().equals("增强模式") && param.args[1] != null) {
+                        if (getXSPString("lyricModel", "增强模式").equals("增强模式") && param.args[1] != null) {
                             String str = (String) param.args[1];
                             sendLyric(context, " " + str, "kuwo");
                             XposedBridge.log("酷我音乐:" + str);
                         }
-
                     }
                 });
                 break;
@@ -680,7 +694,7 @@ public class MainHook implements IXposedHookLoadPackage {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         super.afterHookedMethod(param);
-                        if (new Config().getLyricModel().equals("增强模式")) {
+                        if (getXSPString("lyricModel", "增强模式").equals("增强模式")) {
                             Class findClass = XposedHelpers.findClass("com.lyricengine.base.h", lpparam.classLoader);
                             Object obj = XposedHelpers.findField(param.thisObject.getClass(), "b").get(param.thisObject);
                             Field declaredField = findClass.getDeclaredField("a");
@@ -717,8 +731,7 @@ public class MainHook implements IXposedHookLoadPackage {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         super.afterHookedMethod(param);
-                        Config config = new Config();
-                        if (config.getAodLyricService() && !lyric.equals("")) {
+                        if (getXSPSBoolean("lyricService", false) && !lyric.equals("")) {
                             Application currentApplication = AndroidAppHelper.currentApplication();
                             XposedBridge.log("息屏显示" + param.thisObject);
                             FrameLayout frameLayout = (FrameLayout) ((View) XposedHelpers.findField(param.thisObject.getClass(), "mTableModeContainer").get(param.thisObject)).getParent();
@@ -789,7 +802,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                 textView3.setText(simpleDateFormat.format(new Date()));
                                 if (message.what == 101) {
                                     String str = lyric;
-                                    if (str.equals("") || (!config.getAodLyricService())) {
+                                    if (str.equals("") || (!getXSPSBoolean("aodLyricService", false))) {
                                         Iterator<ActivityManager.RunningAppProcessInfo> it = ((ActivityManager) currentApplication.getSystemService(Context.ACTIVITY_SERVICE)).getRunningAppProcesses().iterator();
                                         while (true) {
                                             if (it.hasNext()) {
@@ -803,7 +816,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                             }
                                         }
                                     }
-                                    textView2.setText(config.getSign());
+                                    textView2.setText(getXSPString("defSign", ""));
                                     TextPaint paint = scrollTextView.getPaint();
                                     new LinearGradient((float) 0, (float) 0, (float) scrollTextView.getWidth(), (float) scrollTextView.getHeight(), new int[]{-65536, -16711936, -16776961}, null, Shader.TileMode.CLAMP);
                                     scrollTextView.setWidth(((int) paint.measureText(str)) + 6);
@@ -859,7 +872,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                 }
                             });
                             new Thread(() -> {
-                                while (new Config().getSrcService()) {
+                                while (getXSPSBoolean("proSrc", false)) {
                                     try {
                                         Thread.sleep(60000);
                                     } catch (InterruptedException e) {
@@ -950,6 +963,4 @@ public class MainHook implements IXposedHookLoadPackage {
     public void sendLyric(Context context, String lyric, String icon) {
         context.sendBroadcast(new Intent().setAction("Lyric_Server").putExtra("Lyric_Data", lyric).putExtra("Lyric_Icon", icon));
     }
-
-
 }
