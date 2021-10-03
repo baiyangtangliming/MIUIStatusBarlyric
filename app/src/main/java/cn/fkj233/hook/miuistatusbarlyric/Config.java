@@ -236,7 +236,7 @@ public class Config {
     public void setIcon(String str) {
         try {
             this.config.put("图标模式", str);
-            this.temp.put("图标配置", this.config);
+            this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
         } catch (JSONException e) {
             e.printStackTrace();
@@ -248,7 +248,7 @@ public class Config {
             return new Config().getIcon();
         }
         try {
-            if (this.config.get("图标模式") == null) {
+            if (this.config.get("配置文件") == null) {
                 return "关闭";
             }
             return (String) this.config.get("图标模式");

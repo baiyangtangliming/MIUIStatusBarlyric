@@ -144,6 +144,7 @@ public class MainHook implements IXposedHookLoadPackage {
                             ((WindowManager) application.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(displayMetrics);
                             int dw = displayMetrics.widthPixels;
 
+                            // 获取系统版本
                             String miuiVer = getSystemProperty();
                             XposedBridge.log("MIUI Ver: " + miuiVer);
                             if (miuiVer.equals("V12")) {
@@ -155,9 +156,12 @@ public class MainHook implements IXposedHookLoadPackage {
                                 clockField = XposedHelpers.findField(param.thisObject.getClass(), "mClockView");
                             }
 
+                            // 反射获取时钟
                             TextView clock = (TextView) clockField.get(param.thisObject);
                             clock.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
                             int measuredHeight = clock.getMeasuredHeight();
+
+                            // 创建跑马灯文字
                             AutoMarqueeTextView autoMarqueeTextView = new AutoMarqueeTextView(application);
                             autoMarqueeTextView.setLayoutParams(new LinearLayout.LayoutParams(-2, -2, (float) 19));
                             autoMarqueeTextView.setWidth((dw * 35) / 100);
@@ -167,6 +171,8 @@ public class MainHook implements IXposedHookLoadPackage {
                             autoMarqueeTextView.setTextSize(0, clock.getTextSize());
                             autoMarqueeTextView.setSingleLine(true);
                             autoMarqueeTextView.setMarqueeRepeatLimit(-1);
+
+                            // 创建跑马灯文字2
                             AutoMarqueeTextView autoMarqueeTextView2 = new AutoMarqueeTextView(application);
                             autoMarqueeTextView2.setLayoutParams(new LinearLayout.LayoutParams(-2, -2, (float) 19));
                             autoMarqueeTextView2.setWidth((dw * 35) / 100);
@@ -176,15 +182,21 @@ public class MainHook implements IXposedHookLoadPackage {
                             autoMarqueeTextView2.setTextSize(0, clock.getTextSize());
                             autoMarqueeTextView2.setSingleLine(true);
                             autoMarqueeTextView2.setMarqueeRepeatLimit(-1);
+
+                            // 创建动画控件
                             ViewFlipper viewFlipper = new ViewFlipper(application);
                             viewFlipper.setPadding(5, 0, 0, 0);
                             viewFlipper.addView(autoMarqueeTextView);
                             viewFlipper.addView(autoMarqueeTextView2);
                             viewFlipper.setVisibility(View.GONE);
+
+                            // 获取时钟线性布局
                             LinearLayout linearLayout = (LinearLayout) clock.getParent();
                             linearLayout.setGravity(19);
                             linearLayout.setOrientation(LinearLayout.HORIZONTAL);
                             linearLayout.addView(viewFlipper, 1);
+
+                            // 创建跑马灯文字3
                             AutoMarqueeTextView autoMarqueeTextView3 = new AutoMarqueeTextView(application);
                             autoMarqueeTextView3.setLayoutParams(new LinearLayout.LayoutParams(-2, -2, (float) 19));
                             autoMarqueeTextView3.setWidth(0);
@@ -197,25 +209,41 @@ public class MainHook implements IXposedHookLoadPackage {
                             autoMarqueeTextView3.setEllipsize(TextUtils.TruncateAt.MARQUEE);
                             autoMarqueeTextView3.setMarqueeRepeatLimit(-1);
                             autoMarqueeTextView3.setVisibility(View.GONE);
+
+                            // 创建新的线性布局
                             LinearLayout linearLayout2 = new LinearLayout(application);
                             linearLayout2.setGravity(19);
                             linearLayout2.addView(autoMarqueeTextView3);
+
                             linearLayout.addView(linearLayout2, 1);
+
+                            // 创建逐字动画
                             CTextView cTextView = new CTextView(application);
                             cTextView.setLayoutParams(new LinearLayout.LayoutParams(0, -2, (float) 19));
+
                             linearLayout.addView(cTextView, 1);
+
                             cTextView.setVisibility(View.GONE);
+
                             TextView textView2 = new TextView(application);
                             textView2.setLayoutParams(new LinearLayout.LayoutParams(-2, -2, (float) 17));
+
                             LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) textView2.getLayoutParams();
                             layoutParams.setMargins(0, 2, 0, 0);
+
                             textView2.setLayoutParams(layoutParams);
+
                             GifView gifView = new GifView(application);
+
                             TextPaint paint = autoMarqueeTextView.getPaint();
+
                             gifView.setLayoutParams(new LinearLayout.LayoutParams((int) paint.measureText("夏"), (int) paint.measureText("夏"), (float) 17));
+
                             LinearLayout linearLayout3 = new LinearLayout(application);
+
                             linearLayout3.addView(textView2);
                             linearLayout3.addView(gifView);
+
                             linearLayout.addView(linearLayout3, 1);
 
                             final Handler hAMT = new Handler(message -> {
@@ -294,9 +322,11 @@ public class MainHook implements IXposedHookLoadPackage {
                                             break;
                                     }
                                     if (i == 0) {
+                                        // 关闭动画
                                         viewFlipper.setInAnimation(null);
                                         viewFlipper.setOutAnimation(null);
                                     } else {
+                                        // 开启动画
                                         viewFlipper.setInAnimation(new AnimationTools().translateIn(i));
                                         viewFlipper.setOutAnimation(new AnimationTools().translateOut(i));
                                     }
@@ -656,12 +686,9 @@ public class MainHook implements IXposedHookLoadPackage {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         super.afterHookedMethod(param);
-                        if (new Config().getLyricModel().equals("增强模式") && param.args[1] != null) {
-                            String str = (String) param.args[1];
-                            sendLyric(context, " " + str, "kuwo");
-                            XposedBridge.log("酷我音乐:" + str);
-                        }
-
+                        String str = (String) param.args[1];
+                        sendLyric(context, " " + str, "kuwo");
+                        XposedBridge.log("酷我音乐:" + str);
                     }
                 });
                 break;
@@ -675,14 +702,12 @@ public class MainHook implements IXposedHookLoadPackage {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         super.afterHookedMethod(param);
-                        if (new Config().getLyricModel().equals("增强模式")) {
-                            Class findClass = XposedHelpers.findClass("com.lyricengine.base.h", lpparam.classLoader);
-                            Object obj = XposedHelpers.findField(param.thisObject.getClass(), "b").get(param.thisObject);
-                            Field declaredField = findClass.getDeclaredField("a");
-                            declaredField.setAccessible(true);
-                            String str = (String) declaredField.get(obj);
-                            sendLyric(context, str, "qqmusic");
-                        }
+                        Class findClass = XposedHelpers.findClass("com.lyricengine.base.h", lpparam.classLoader);
+                        Object obj = XposedHelpers.findField(param.thisObject.getClass(), "b").get(param.thisObject);
+                        Field declaredField = findClass.getDeclaredField("a");
+                        declaredField.setAccessible(true);
+                        String str = (String) declaredField.get(obj);
+                        sendLyric(context, str, "qqmusic");
                     }
                 });
                 break;
