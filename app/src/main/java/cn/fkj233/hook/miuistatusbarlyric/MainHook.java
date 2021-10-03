@@ -35,7 +35,6 @@ import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextPaint;
@@ -56,7 +55,6 @@ public class MainHook implements IXposedHookLoadPackage {
     private static final String KEY_LYRIC = "lyric";
     private static final float[] NEGATIVE;
     private static String musicName = "";
-    public static String PATH = Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/";
     private Context context = null;
     private static String lyric = "";
     private static String iconPath = "";
@@ -94,13 +92,13 @@ public class MainHook implements IXposedHookLoadPackage {
                 Config config = new Config();
                 switch (config.getIcon()) {
                     case "自动":
-                        iconPath = PATH + intent.getStringExtra("Lyric_Icon") + ".png";
+                        iconPath = Utlis.PATH + intent.getStringExtra("Lyric_Icon") + ".png";
                         break;
                     case "自定义":
-                        iconPath = PATH + "icon.png";
+                        iconPath = Utlis.PATH + "icon.png";
                         break;
                     default:
-                        iconPath = PATH + "夏.png";
+                        iconPath = Utlis.PATH + "夏.png";
                         break;
                 }
             }
@@ -294,9 +292,9 @@ public class MainHook implements IXposedHookLoadPackage {
                                     } else {
                                         textView2.setCompoundDrawables(null, null, null, null);
                                         if (config.getIcon().equals("自定义")) {
-                                            if (new File(PATH + "icon.gif").exists()) {
+                                            if (new File(Utlis.PATH + "icon.gif").exists()) {
                                                 gifView.setVisibility(View.VISIBLE);
-                                                gifView.setMovieResource(PATH + "icon.gif");
+                                                gifView.setMovieResource(Utlis.PATH + "icon.gif");
                                             } else {
                                                 gifView.setVisibility(View.GONE);
                                                 gifView.setMovieResource("");
@@ -665,7 +663,7 @@ public class MainHook implements IXposedHookLoadPackage {
                 });
                 break;
             case "cn.kuwo.player":
-                XposedHelpers.findAndHookMethod(Class.forName("android.bluetooth.BluetoothAdapter").getName(), lpparam.classLoader, "isEnabled", new XC_MethodHook() {
+                XposedHelpers.findAndHookMethod("android.bluetooth.BluetoothAdapter", lpparam.classLoader, "isEnabled", new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                         super.beforeHookedMethod(param);
@@ -677,18 +675,25 @@ public class MainHook implements IXposedHookLoadPackage {
                         param.setResult(true);
                     }
                 });
-                XposedHelpers.findAndHookMethod(lpparam.classLoader.loadClass("cn.kuwo.mod.playcontrol.session.media.MediaSessionDirector"), "updateMetaData", Class.forName("java.lang.String"), new XC_MethodHook() {
+                XposedHelpers.findAndHookMethod("cn.kuwo.mod.playcontrol.RemoteControlLyricMgr", lpparam.classLoader, "updateLyricText", Class.forName("java.lang.String"), new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                         super.beforeHookedMethod(param);
+                        String str = (String) param.args[0];
+                        XposedBridge.log("酷我音乐:" + str);
+                        if (param.args[0] != null) {
+                            sendLyric(context, " " + str, "kuwo");
+                        }
+                        param.setResult(replaceHookedMethod(param));
+                    }
+
+                    protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
+                        return null;
                     }
 
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         super.afterHookedMethod(param);
-                        String str = (String) param.args[1];
-                        sendLyric(context, " " + str, "kuwo");
-                        XposedBridge.log("酷我音乐:" + str);
                     }
                 });
                 break;
@@ -760,7 +765,7 @@ public class MainHook implements IXposedHookLoadPackage {
                             linearLayout.setOrientation(LinearLayout.VERTICAL);
                             linearLayout.setGravity(17);
                             linearLayout.setPadding(150, 150, 150, 150);
-                            Drawable createFromPath = Drawable.createFromPath(PATH + "icon7.png");
+                            Drawable createFromPath = Drawable.createFromPath(Utlis.PATH + "icon7.png");
                             ImageView imageView = new ImageView(currentApplication);
                             imageView.setBackgroundDrawable(createFromPath);
                             GifView gifView = new GifView(currentApplication);
@@ -787,7 +792,7 @@ public class MainHook implements IXposedHookLoadPackage {
                             textView3.setLayoutParams(new LinearLayout.LayoutParams(-1, -2));
                             LinearLayout linearLayout2 = new LinearLayout(currentApplication);
                             linearLayout2.setLayoutParams(new LinearLayout.LayoutParams(-1, 500));
-                            if (new File(PATH + "icon7.png").exists()) {
+                            if (new File(Utlis.PATH + "icon7.png").exists()) {
                                 linearLayout.addView(imageView);
                             } else {
                                 linearLayout.addView(gifView);
@@ -891,7 +896,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                 }
                             }).start();
                             Handler handler3 = new Handler(message -> {
-                                gifView.setMovieResource(PATH + "icon7.gif");
+                                gifView.setMovieResource(Utlis.PATH + "icon7.gif");
                                 return true;
                             });
                             new Thread(() -> {

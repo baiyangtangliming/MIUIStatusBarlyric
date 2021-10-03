@@ -29,6 +29,24 @@ import java.io.InputStreamReader;
 
 public class SettingsActivity extends AppCompatActivity {
 
+    public static void delete(File file) {
+        if (file.isFile()) {
+            file.delete();
+            return;
+        }
+        if(file.isDirectory()){
+            File[] childFiles = file.listFiles();
+            if (childFiles == null || childFiles.length == 0) {
+                file.delete();
+                return;
+            }
+            for (int i = 0; i < childFiles.length; i++) {
+                delete(childFiles[i]);
+            }
+            file.delete();
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -281,29 +299,46 @@ public class SettingsActivity extends AppCompatActivity {
                 return true;
             });
 
+            Preference reset = findPreference("reset");
+            assert reset != null;
+            reset.setOnPreferenceClickListener((preference) -> {
+                new AlertDialog.Builder(requireActivity())
+                    .setTitle("是否要重置模块")
+                    .setMessage("模块没问题请不要随意重置")
+                    .setPositiveButton("确定", (dialog, which) -> {
+                        delete(new File(Utlis.PATH));
+                        delete(new File("/data/data/cn.fkj233.hook.miuistatusbarlyric/shared_prefs/"));
+                        Toast.makeText(requireActivity(), "重置成功", Toast.LENGTH_SHORT).show();
+                        System.exit(0);
+                    })
+                    .create()
+                    .show();
+                return true;
+            });
+
         }
 
         public void initIcon(Context context) {
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "icon.png").exists() && !new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "icon.gif").exists()) {
-                copyAssets(context, "icon/icon.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/icon.png");
+            if (!new File(Utlis.PATH, "icon.png").exists() && !new File(Utlis.PATH, "icon.gif").exists()) {
+                copyAssets(context, "icon/icon.png", Utlis.PATH + "icon.png");
             }
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "icon7.png").exists() && !new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "icon7.gif").exists())
-                copyAssets(context, "icon/icon7.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/icon7.png");
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "kugou.png").exists()) {
-                copyAssets(context, "icon/kugou.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/kugou.png");
+            if (!new File(Utlis.PATH, "icon7.png").exists() && !new File(Utlis.PATH, "icon7.gif").exists())
+                copyAssets(context, "icon/icon7.png", Utlis.PATH + "icon7.png");
+            if (!new File(Utlis.PATH, "kugou.png").exists()) {
+                copyAssets(context, "icon/kugou.png", Utlis.PATH + "kugou.png");
             }
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "netease.png").exists()) {
-                copyAssets(context, "icon/netease.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/netease.png");
+            if (!new File(Utlis.PATH, "netease.png").exists()) {
+                copyAssets(context, "icon/netease.png", Utlis.PATH + "netease.png");
             }
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "qqmusic.png").exists()) {
-                copyAssets(context, "icon/qqmusic.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/qqmusic.png");
+            if (!new File(Utlis.PATH, "qqmusic.png").exists()) {
+                copyAssets(context, "icon/qqmusic.png", Utlis.PATH + "qqmusic.png");
             }
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", "kuwo.png").exists()) {
-                copyAssets(context, "icon/kuwo.png", Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/kuwo.png");
+            if (!new File(Utlis.PATH, "kuwo.png").exists()) {
+                copyAssets(context, "icon/kuwo.png", Utlis.PATH + "kuwo.png");
             }
-            if (!new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", ".nomedia").exists()) {
+            if (!new File(Utlis.PATH, ".nomedia").exists()) {
                 try {
-                    new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/", ".nomedia").createNewFile();
+                    new File(Utlis.PATH, ".nomedia").createNewFile();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -370,20 +405,20 @@ public class SettingsActivity extends AppCompatActivity {
 
 
         public void init() {
-            File file = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric");
-            File file3 = new File(Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/.msblConfig");
+            File file = new File(Utlis.PATH);
+            File file2 = new File(Utlis.PATH + ".msblConfig");
             if (!file.exists()) {
                 file.mkdirs();
             }
-            if (!file3.exists()) {
+            if (!file2.exists()) {
                 try {
                     Config config = new Config();
-                    file3.createNewFile();
+                    file2.createNewFile();
                     config.setLyricService(true);
                     config.setLyricWidth(-1);
                     config.setLyricMaxWidth(-1);
                     config.setTimeWidth(-1);
-                    config.setLyricAnim("上滑");
+                    config.setLyricAnim("关闭");
                     config.setFanse("关闭");
                     config.setAodLyricService(false);
                     config.setSrcService(true);
