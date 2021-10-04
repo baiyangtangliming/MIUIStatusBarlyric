@@ -289,9 +289,10 @@ public class SettingsActivity extends AppCompatActivity {
 
             Preference verExplain = findPreference("ver_explain");
             assert verExplain != null;
+            verExplain.setSummary("当前版本: " + Utlis.getLocalVersionName(requireContext()));
             verExplain.setOnPreferenceClickListener((preference) -> {
                 new AlertDialog.Builder(requireActivity())
-                        .setTitle("当前版本[1.0]适用于")
+                        .setTitle("当前版本[" + Utlis.getLocalVersionName(requireContext()) + "]适用于")
                         .setMessage("酷狗音乐:v10.8.4\n酷我音乐:v9.4.6.2\n网易云音乐:v8.5.30\nQQ音乐:v10.17.0.11")
                         .setPositiveButton("确定", (dialog, which) -> {})
                         .create()

@@ -88,7 +88,7 @@
 
     <Preference
         android:key="ver_explain"
-        android:summary="当前版本: 1.0"
+        android:summary=""
         android:title="版本说明" />
 
     <Preference
