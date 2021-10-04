@@ -681,7 +681,7 @@ public class MainHook implements IXposedHookLoadPackage {
                         super.beforeHookedMethod(param);
                         String str = (String) param.args[0];
                         XposedBridge.log("酷我音乐:" + str);
-                        if (param.args[0] != null) {
+                        if (param.args[0] != null && !str.equals("") && !str.equals("好音质 用酷我") && !str.equals("正在搜索歌词...") && !str.contains(" - ")) {
                             sendLyric(context, " " + str, "kuwo");
                         }
                         param.setResult(replaceHookedMethod(param));
@@ -707,11 +707,16 @@ public class MainHook implements IXposedHookLoadPackage {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         super.afterHookedMethod(param);
+
                         Class findClass = XposedHelpers.findClass("com.lyricengine.base.h", lpparam.classLoader);
-                        Object obj = XposedHelpers.findField(param.thisObject.getClass(), "b").get(param.thisObject);
                         Field declaredField = findClass.getDeclaredField("a");
                         declaredField.setAccessible(true);
+
+                        Object obj = XposedHelpers.findField(param.thisObject.getClass(), "b").get(param.thisObject);
                         String str = (String) declaredField.get(obj);
+
+                        XposedBridge.log("qq音乐: " + str);
+
                         sendLyric(context, str, "qqmusic");
                     }
                 });

@@ -239,18 +239,11 @@ public class Config {
             this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
         } catch (JSONException e) {
-            e.printStackTrace();
         }
     }
 
     public String getIcon() {
-        if (this.config == null) {
-            return new Config().getIcon();
-        }
         try {
-            if (this.config.get("配置文件") == null) {
-                return "关闭";
-            }
             return (String) this.config.get("图标模式");
         } catch (JSONException e) {
             return "关闭";
