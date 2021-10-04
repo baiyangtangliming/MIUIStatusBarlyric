@@ -56,7 +56,10 @@
             android:title="隐藏实时网速"
             android:key="hideNetWork"
             android:summary="有歌词自动隐藏实时网速"/>
-
+    <CheckBoxPreference
+            android:title="隐藏锁屏运营商名称"
+            android:key="hideCUK"
+            android:summary="有歌词自动隐藏锁屏运营商名称"/>
     <ListPreference
             android:title="歌词获取模式"
             android:key="lyricModel"
