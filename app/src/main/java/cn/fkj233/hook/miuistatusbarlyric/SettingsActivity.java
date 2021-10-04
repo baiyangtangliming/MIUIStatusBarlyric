@@ -316,7 +316,16 @@ public class SettingsActivity extends AppCompatActivity {
                 config.setHideNetWork((Boolean) newValue);
                 return true;
             });
+            // 隐藏运营商名称
+            CheckBoxPreference hideCUK = findPreference("hideCUK");
+            assert hideCUK != null;
+            hideCUK.setChecked(config.getHideCUK());
+            hideCUK.setOnPreferenceChangeListener((preference, newValue) -> {
+                config.setHideCUK((Boolean) newValue);
+                return true;
+            });
         }
+
 
         public void initIcon(Context context) {
             if (!new File(Utlis.PATH, "icon.png").exists() && !new File(Utlis.PATH, "icon.gif").exists()) {

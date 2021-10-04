@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.provider.Settings;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -345,6 +346,9 @@ public class MainHook implements IXposedHookLoadPackage {
                                         if (config.getHideNetWork() && MiuiStatusBarManager.isShowNetworkSpeed(application)) {
                                             MiuiStatusBarManager.setShowNetworkSpeed(application, false);
                                         }
+                                        if (config.getHideCUK() && Settings.System.getInt(context.getContentResolver(), "status_bar_show_carrier_under_keyguard", 1) == 1) {
+                                            Settings.System.putInt(context.getContentResolver(), "status_bar_show_carrier_under_keyguard", 0);
+                                        }
                                         viewFlipper.showNext();
                                         if (config.getLyricAnim().equals("旋转")) {
                                             thread.interrupt();
@@ -405,6 +409,9 @@ public class MainHook implements IXposedHookLoadPackage {
                                         }
                                         if (config.getHideNetWork() && MiuiStatusBarManager.isShowNetworkSpeed(application)) {
                                             MiuiStatusBarManager.setShowNetworkSpeed(application, false);
+                                        }
+                                        if (config.getHideCUK() && Settings.System.getInt(context.getContentResolver(), "status_bar_show_carrier_under_keyguard", 1) == 1) {
+                                            Settings.System.putInt(context.getContentResolver(), "status_bar_show_carrier_under_keyguard", 0);
                                         }
                                         viewFlipper.showNext();
                                         if (config.getLyricAnim().equals("旋转")) {
@@ -477,11 +484,16 @@ public class MainHook implements IXposedHookLoadPackage {
                                 viewFlipper.setVisibility(View.GONE);
                                 autoMarqueeTextView3.setVisibility(View.GONE);
                                 cTextView.setVisibility(View.GONE);
-                                if (config.getHideNoti() && !MiuiStatusBarManager.isShowNotificationIcon(application)) {
-                                    MiuiStatusBarManager.setShowNotificationIcon(application, true);
-                                }
-                                if (config.getHideNetWork() && MiuiStatusBarManager.isShowNetworkSpeed(application)) {
-                                    MiuiStatusBarManager.setShowNetworkSpeed(application, false);
+                                if (!lyric.equals("")) {
+                                    if (config.getHideNoti() && MiuiStatusBarManager.isShowNotificationIcon(application)) {
+                                        MiuiStatusBarManager.setShowNotificationIcon(application, false);
+                                    }
+                                    if (config.getHideNetWork() && MiuiStatusBarManager.isShowNetworkSpeed(application)) {
+                                        MiuiStatusBarManager.setShowNetworkSpeed(application, false);
+                                    }
+                                    if (config.getHideCUK() && Settings.System.getInt(context.getContentResolver(), "status_bar_show_carrier_under_keyguard", 1) == 1) {
+                                        Settings.System.putInt(context.getContentResolver(), "status_bar_show_carrier_under_keyguard", 0);
+                                    }
                                 }
                                 return true;
                             });
@@ -523,6 +535,9 @@ public class MainHook implements IXposedHookLoadPackage {
                                                         }
                                                         if (config.getHideNetWork() && !MiuiStatusBarManager.isShowNetworkSpeed(application)) {
                                                             MiuiStatusBarManager.setShowNetworkSpeed(application, true);
+                                                        }
+                                                        if (config.getHideCUK() && Settings.System.getInt(context.getContentResolver(), "status_bar_show_carrier_under_keyguard", 1) != 1) {
+                                                            Settings.System.putInt(application.getContentResolver(), "status_bar_show_carrier_under_keyguard", 1);
                                                         }
                                                     }
                                                 } else {
@@ -605,6 +620,9 @@ public class MainHook implements IXposedHookLoadPackage {
                                                         }
                                                         if (config.getHideNetWork() && !MiuiStatusBarManager.isShowNetworkSpeed(application)) {
                                                             MiuiStatusBarManager.setShowNetworkSpeed(application, true);
+                                                        }
+                                                        if (config.getHideCUK() && Settings.System.getInt(context.getContentResolver(), "status_bar_show_carrier_under_keyguard", 1) != 1) {
+                                                            Settings.System.putInt(application.getContentResolver(), "status_bar_show_carrier_under_keyguard", 1);
                                                         }
                                                     }
                                                 }

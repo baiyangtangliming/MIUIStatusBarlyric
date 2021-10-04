@@ -7,9 +7,9 @@ import org.json.JSONObject;
 public class Config {
     JSONObject config;
     String fanse = "关闭";
-    int lyricMaxWidth = 35;
+    int lyricMaxWidth = -1;
     Boolean lyricService = true;
-    int lyricWidth = 35;
+    int lyricWidth = -1;
     JSONObject temp;
     int timeWidth = -1;
 
@@ -83,6 +83,14 @@ public class Config {
             this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
         } catch (JSONException ignored) {
+        }
+    }
+
+    public int getTimeWidth() {
+        try {
+            return (Integer) this.config.get("时间宽度");
+        } catch (JSONException e) {
+            return -1;
         }
     }
 
@@ -171,21 +179,21 @@ public class Config {
         }
     }
 
-    public Boolean getLyricOff() {
-        try {
-            this.config.get("歌曲暂停自动关闭歌词");
-            return (Boolean) this.config.get("歌曲暂停自动关闭歌词");
-        } catch (JSONException e) {
-            return false;
-        }
-    }
-
     public void setLyricOff(Boolean bool) {
         try {
             this.config.put("歌曲暂停自动关闭歌词", bool);
             this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
         } catch (JSONException ignored) {
+        }
+    }
+
+    public Boolean getLyricOff() {
+        try {
+            this.config.get("歌曲暂停自动关闭歌词");
+            return (Boolean) this.config.get("歌曲暂停自动关闭歌词");
+        } catch (JSONException e) {
+            return false;
         }
     }
 
@@ -271,6 +279,23 @@ public class Config {
             return (Boolean) this.config.get("隐藏实时网速");
         } catch (JSONException e) {
             return false;
+        }
+    }
+
+    public Boolean getHideCUK() {
+        try {
+            return (Boolean) this.config.get("隐藏运营商名称");
+        } catch (JSONException e) {
+            return false;
+        }
+    }
+
+    public void setHideCUK(Boolean bool) {
+        try {
+            this.config.put("隐藏运营商名称", bool);
+            this.temp.put("配置文件", this.config);
+            ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
+        } catch (JSONException ignored) {
         }
     }
 }
