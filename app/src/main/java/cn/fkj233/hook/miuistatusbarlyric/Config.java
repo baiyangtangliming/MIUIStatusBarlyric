@@ -285,4 +285,21 @@ public class Config {
             return false;
         }
     }
+
+    public void setHideCUK(Boolean bool) {
+        try {
+            this.config.put("隐藏运营商名称", bool);
+            this.temp.put("配置文件", this.config);
+            ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
+        } catch (JSONException e) {
+        }
+    }
+
+    public Boolean getHideCUK() {
+        try {
+            return (Boolean) this.config.get("隐藏运营商名称");
+        } catch (JSONException e) {
+            return false;
+        }
+    }
 }
