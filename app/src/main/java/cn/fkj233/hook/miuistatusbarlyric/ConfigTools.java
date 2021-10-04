@@ -10,7 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class ConfigTools {
-    static String path = Environment.getExternalStorageDirectory() + "/Android/media/cn.fkj233.hook.miuistatusbarlyric/.msblConfig";
+    static String path = Utlis.PATH + ".msblConfig";
 
     public static String getConfig() {
         new File(path);

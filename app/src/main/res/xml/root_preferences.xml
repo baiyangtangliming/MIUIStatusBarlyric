@@ -24,6 +24,11 @@
         android:key="lyricAnim"
         android:summary="旋转"/>
 
+    <EditTextPreference
+        android:title="歌词颜色 "
+       android:key="lyricColour"
+        android:summary="关闭"/>
+
     <ListPreference
         android:title="图标"
         android:key="icon"

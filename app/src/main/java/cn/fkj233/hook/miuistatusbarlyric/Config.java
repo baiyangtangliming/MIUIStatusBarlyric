@@ -249,4 +249,21 @@ public class Config {
             return "关闭";
         }
     }
+
+    public void setLyricColor(String str) {
+        try {
+            this.config.put("文字颜色", str);
+            this.temp.put("配置文件", this.config);
+            ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
+        } catch (JSONException e) {
+        }
+    }
+
+    public String getLyricColor() {
+        try {
+            return (String) this.config.get("文字颜色");
+        } catch (JSONException e) {
+            return "关闭";
+        }
+    }
 }

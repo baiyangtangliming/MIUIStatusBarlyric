@@ -28,6 +28,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.LinearGradient;
@@ -262,7 +263,7 @@ public class MainHook implements IXposedHookLoadPackage {
                                 return true;
                             });
 
-                            final Handler hT = new Handler(message -> {
+                            final Handler iconFanse = new Handler(message -> {
                                 textView2.setCompoundDrawables((Drawable) message.obj, null, null, null);
                                 return true;
                             });
@@ -339,7 +340,11 @@ public class MainHook implements IXposedHookLoadPackage {
                                             autoMarqueeTextView3.setText(string);
                                             autoMarqueeTextView3.setVisibility(View.GONE);
                                             cTextView.setVisibility(View.VISIBLE);
-                                            cTextView.setText(string, application, measuredHeight, clock.getTextSize(), clock.getTypeface(), clock.getTextColors());
+                                            if (config.getLyricColor().equals("关闭")) {
+                                                cTextView.setText(string, application, measuredHeight, clock.getTextSize(), clock.getTypeface(), clock.getTextColors());
+                                            } else {
+                                                cTextView.setText(string, application, measuredHeight, clock.getTextSize(), clock.getTypeface(), ColorStateList.valueOf(Color.parseColor(config.getLyricColor())));
+                                            }
                                             new Thread(() -> {
                                                 try {
                                                     Thread.sleep(1500);
@@ -393,7 +398,11 @@ public class MainHook implements IXposedHookLoadPackage {
                                             autoMarqueeTextView3.setText(string);
                                             autoMarqueeTextView3.setVisibility(View.GONE);
                                             cTextView.setVisibility(View.VISIBLE);
-                                            cTextView.setText(string, application, measuredHeight, clock.getTextSize(), clock.getTypeface(), clock.getTextColors());
+                                            if (config.getLyricColor().equals("关闭")) {
+                                                cTextView.setText(string, application, measuredHeight, clock.getTextSize(), clock.getTypeface(), clock.getTextColors());
+                                            } else {
+                                                cTextView.setText(string, application, measuredHeight, clock.getTextSize(), clock.getTypeface(), ColorStateList.valueOf(Color.parseColor(config.getLyricColor())));
+                                            }
                                             new Thread(() -> {
                                                 try {
                                                     Thread.sleep(1500);
@@ -504,7 +513,13 @@ public class MainHook implements IXposedHookLoadPackage {
                                                 this.count = 0;
                                             }
                                             if (this.b && !lyric.equals("")) {
-                                                if (!(clock.getTextColors() == null || this.color == clock.getTextColors())) {
+                                                if (!config.getLyricColor().equals("关闭")) {
+                                                    autoMarqueeTextView.setTextColor(ColorStateList.valueOf(Color.parseColor(config.getLyricColor())));
+                                                    autoMarqueeTextView2.setTextColor(ColorStateList.valueOf(Color.parseColor(config.getLyricColor())));
+                                                    cTextView.setTextColor(ColorStateList.valueOf(Color.parseColor(config.getLyricColor())));
+                                                    autoMarqueeTextView3.setTextColor(ColorStateList.valueOf(Color.parseColor(config.getLyricColor())));
+                                                    this.color = ColorStateList.valueOf(Color.parseColor(config.getLyricColor()));
+                                                } else if (!(clock.getTextColors() == null || this.color == clock.getTextColors())) {
                                                     autoMarqueeTextView.setTextColor(clock.getTextColors());
                                                     autoMarqueeTextView2.setTextColor(clock.getTextColors());
                                                     cTextView.setTextColor(clock.getTextColors());
@@ -514,17 +529,25 @@ public class MainHook implements IXposedHookLoadPackage {
                                                 }
                                                 if (this.config != null && !this.icon.equals("关闭") && this.fs) {
                                                     if (new File(iconPath).exists()) {
-                                                        Drawable createFromPath = Drawable.createFromPath(iconPath);
-                                                        Drawable drawable = createFromPath;
-                                                        createFromPath.setBounds(0, 0, (int) clock.getTextSize(), (int) clock.getTextSize());
-                                                        if (this.fanse.equals("模式一")) {
-                                                            drawable = fanse(drawable, !isBri(clock.getTextColors().getDefaultColor()));
-                                                        } else if (this.fanse.equals("模式二")) {
-                                                            drawable = fanse(drawable, isBri(clock.getTextColors().getDefaultColor()));
+                                                        Drawable createFromPath = null;
+                                                        try {
+                                                            createFromPath = Drawable.createFromPath(iconPath);
+                                                        } catch (OutOfMemoryError e) {
+                                                            XposedBridge.log("内存溢出!!!!");
+                                                            XposedBridge.log(iconPath);
+                                                            XposedBridge.log(e);
                                                         }
-                                                        Message obtainMessage2 = hT.obtainMessage();
-                                                        obtainMessage2.obj = drawable;
-                                                        hT.sendMessage(obtainMessage2);
+                                                        if (createFromPath != null) {
+                                                            createFromPath.setBounds(0, 0, (int) clock.getTextSize(), (int) clock.getTextSize());
+                                                            if (this.fanse.equals("模式一")) {
+                                                                createFromPath = fanse(createFromPath, !isBri(clock.getTextColors().getDefaultColor()));
+                                                            } else if (this.fanse.equals("模式二")) {
+                                                                createFromPath = fanse(createFromPath, isBri(clock.getTextColors().getDefaultColor()));
+                                                            }
+                                                            Message obtainMessage2 = iconFanse.obtainMessage();
+                                                            obtainMessage2.obj = createFromPath;
+                                                            iconFanse.sendMessage(obtainMessage2);
+                                                        }
                                                     }
                                                     this.fs = false;
                                                 }

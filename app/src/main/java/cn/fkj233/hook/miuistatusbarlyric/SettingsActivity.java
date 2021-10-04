@@ -2,6 +2,7 @@ package cn.fkj233.hook.miuistatusbarlyric;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -77,6 +78,7 @@ public class SettingsActivity extends AppCompatActivity {
         CheckBoxPreference aodLyricService;
         EditTextPreference defSign;
         CheckBoxPreference srcService;
+        EditTextPreference lyricColour;
 
 
 
@@ -131,6 +133,8 @@ public class SettingsActivity extends AppCompatActivity {
                 lyricMaxWidth.setDefaultValue(newValue);
                 if (newValue.toString().equals("-1")) {
                     lyricMaxWidth.setDialogMessage("(-1~100，-1为关闭，仅在歌词宽度为自适应时生效)，当前:关闭");
+                    lyricMaxWidth.setSummary("关闭");
+                    lyricMaxWidth.setDefaultValue("关闭");
                 } else {
                     lyricMaxWidth.setDialogMessage("(-1~100，-1为关闭，仅在歌词宽度为自适应时生效)，当前:" + newValue.toString());
                 }
@@ -317,6 +321,24 @@ public class SettingsActivity extends AppCompatActivity {
                 return true;
             });
 
+            this.lyricColour = findPreference("lyricColour");
+            assert this.lyricColour != null;
+            this.lyricColour.setSummary(config.getLyricColor());
+            this.lyricColour.setDialogMessage("请输入16进制颜色代码，例如: #C0C0C0，目前：" + config.getLyricColor());
+            this.lyricColour.setOnPreferenceChangeListener((preference, newValue) -> {
+                if (!newValue.toString().equals("关闭")) {
+                    try {
+                        Color.parseColor(newValue.toString());
+                    } catch (Exception e) {
+                        Toast.makeText(requireContext(), "颜色代码不正确!", Toast.LENGTH_SHORT).show();
+                        return true;
+                    }
+                }
+                this.lyricColour.setDialogMessage("请输入16进制颜色代码，例如: #C0C0C0，目前：" + newValue.toString());
+                this.lyricColour.setSummary(newValue.toString());
+                config.setLyricColor(newValue.toString());
+                return true;
+            });
         }
 
         public void initIcon(Context context) {
@@ -428,6 +450,7 @@ public class SettingsActivity extends AppCompatActivity {
                     config.setLyricModel("增强模式");
                     config.setHideNoti(false);
                     config.setIcon("关闭");
+                    config.setLyricColor("关闭");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
