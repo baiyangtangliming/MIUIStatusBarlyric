@@ -1,8 +1,6 @@
 package cn.fkj233.hook.miuistatusbarlyric;
 
 
-import android.bluetooth.BluetoothAdapter;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -24,7 +22,7 @@ public class Config {
             }
             this.temp = new JSONObject(ConfigTools.getConfig() + "");
             this.config = new JSONObject(this.temp.getString("配置文件"));
-        } catch (JSONException e) {
+        } catch (JSONException ignored) {
         }
     }
 
@@ -33,7 +31,7 @@ public class Config {
             this.config.put("总开关", bool);
             this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
-        } catch (JSONException e) {
+        } catch (JSONException ignored) {
         }
     }
 
@@ -50,7 +48,7 @@ public class Config {
             this.config.put("歌词宽度", i);
             this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
-        } catch (JSONException e) {
+        } catch (JSONException ignored) {
         }
     }
 
@@ -67,7 +65,7 @@ public class Config {
             this.config.put("歌词最大宽度", i);
             this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
-        } catch (JSONException e) {
+        } catch (JSONException ignored) {
         }
     }
 
@@ -84,15 +82,7 @@ public class Config {
             this.config.put("时间宽度", i);
             this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
-        } catch (JSONException e) {
-        }
-    }
-
-    public int getTimeWidth() {
-        try {
-            return (Integer) this.config.get("时间宽度");
-        } catch (JSONException e) {
-            return -1;
+        } catch (JSONException ignored) {
         }
     }
 
@@ -101,7 +91,7 @@ public class Config {
             this.config.put("歌词动效", str);
             this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
-        } catch (JSONException e) {
+        } catch (JSONException ignored) {
         }
     }
 
@@ -118,7 +108,7 @@ public class Config {
             this.config.put("反色模式", str);
             this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
-        } catch (JSONException e) {
+        } catch (JSONException ignored) {
         }
     }
 
@@ -135,7 +125,7 @@ public class Config {
             this.config.put("息屏歌词", bool);
             this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
-        } catch (JSONException e) {
+        } catch (JSONException ignored) {
         }
     }
 
@@ -152,7 +142,7 @@ public class Config {
             this.config.put("防烧屏", bool);
             this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
-        } catch (JSONException e) {
+        } catch (JSONException ignored) {
         }
     }
 
@@ -169,7 +159,7 @@ public class Config {
             this.config.put("自定义签名", str);
             this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
-        } catch (JSONException e) {
+        } catch (JSONException ignored) {
         }
     }
 
@@ -181,23 +171,21 @@ public class Config {
         }
     }
 
+    public Boolean getLyricOff() {
+        try {
+            this.config.get("歌曲暂停自动关闭歌词");
+            return (Boolean) this.config.get("歌曲暂停自动关闭歌词");
+        } catch (JSONException e) {
+            return false;
+        }
+    }
+
     public void setLyricOff(Boolean bool) {
         try {
             this.config.put("歌曲暂停自动关闭歌词", bool);
             this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
-        } catch (JSONException e) {
-        }
-    }
-
-    public Boolean getLyricOff() {
-        try {
-            if (this.config.get("歌曲暂停自动关闭歌词") == null) {
-                return false;
-            }
-            return (Boolean) this.config.get("歌曲暂停自动关闭歌词");
-        } catch (JSONException e) {
-            return false;
+        } catch (JSONException ignored) {
         }
     }
 
@@ -206,7 +194,7 @@ public class Config {
             this.config.put("隐藏通知图标", bool);
             this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
-        } catch (JSONException e) {
+        } catch (JSONException ignored) {
         }
     }
 
@@ -223,7 +211,7 @@ public class Config {
             this.config.put("歌词获取模式", str);
             this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
-        } catch (JSONException e) {
+        } catch (JSONException ignored) {
         }
     }
 
@@ -240,7 +228,7 @@ public class Config {
             this.config.put("图标模式", str);
             this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
-        } catch (JSONException e) {
+        } catch (JSONException ignored) {
         }
     }
 
@@ -257,7 +245,7 @@ public class Config {
             this.config.put("文字颜色", str);
             this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
-        } catch (JSONException e) {
+        } catch (JSONException ignored) {
         }
     }
 
@@ -274,7 +262,7 @@ public class Config {
             this.config.put("隐藏实时网速", bool);
             this.temp.put("配置文件", this.config);
             ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
-        } catch (JSONException e) {
+        } catch (JSONException ignored) {
         }
     }
 

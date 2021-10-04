@@ -1,13 +1,7 @@
 package cn.fkj233.hook.miuistatusbarlyric;
 
 
-import android.os.Environment;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 
 public class ConfigTools {
     static String path = Utlis.PATH + ".msblConfig";
@@ -21,10 +15,8 @@ public class ConfigTools {
             fileInputStream.read(bArr);
             str = new String(bArr);
             fileInputStream.close();
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
-        } catch (IOException e2) {
-            e2.printStackTrace();
         }
         return str;
     }
@@ -34,10 +26,8 @@ public class ConfigTools {
             FileOutputStream fileOutputStream = new FileOutputStream(path);
             fileOutputStream.write(str.getBytes());
             fileOutputStream.close();
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
-        } catch (IOException e2) {
-            e2.printStackTrace();
         }
     }
 
@@ -49,7 +39,7 @@ public class ConfigTools {
             while (true) {
                 int idx = getIdx(str, i);
                 if (idx < 0) {
-                    sb.append(str.substring(i, str.length()));
+                    sb.append(str.substring(i));
                     return sb.toString();
                 }
                 String str3 = str2;
@@ -78,9 +68,9 @@ public class ConfigTools {
                     if (!",".equals(substring)) {
                         substring = substring.replaceAll(",", ",\r\n" + str2);
                     }
-                    sb.append(str.substring(i, i + 1) + "\r\n" + str2 + substring + "\r\n" + str3);
+                    sb.append(str.charAt(i)).append("\r\n").append(str2).append(substring).append("\r\n").append(str3);
                 } else {
-                    sb.append(str.substring(i, i + 1) + "\r\n" + str3);
+                    sb.append(str.charAt(i)).append("\r\n").append(str3);
                 }
                 i = idx;
             }
@@ -92,8 +82,8 @@ public class ConfigTools {
     public static int getIdx(String str, int i) {
         char[] cArr = {'{', '}', '[', ']'};
         int i2 = -1;
-        for (int i3 = 0; i3 < cArr.length; i3++) {
-            int indexOf = str.indexOf(cArr[i3], i + 1);
+        for (char c : cArr) {
+            int indexOf = str.indexOf(c, i + 1);
             if (indexOf > -1 && (i2 == -1 || indexOf < i2)) {
                 i2 = indexOf;
             }
@@ -102,16 +92,10 @@ public class ConfigTools {
     }
 
     public static boolean isOpen(String str, int i) {
-        if (i <= -1 || i >= str.length() || (str.charAt(i) != '{' && str.charAt(i) != '[')) {
-            return false;
-        }
-        return true;
+        return i > -1 && i < str.length() && (str.charAt(i) == '{' || str.charAt(i) == '[');
     }
 
     public static boolean isEnd(String str, int i) {
-        if (i <= -1 || i >= str.length() || (str.charAt(i) != '}' && str.charAt(i) != ']')) {
-            return false;
-        }
-        return true;
+        return i > -1 && i < str.length() && (str.charAt(i) == '}' || str.charAt(i) == ']');
     }
 }

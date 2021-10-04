@@ -21,6 +21,7 @@ public class AnimationTools {
         } else if (i == 4) {
             translateAnimation = new TranslateAnimation((float) -100, (float) 0, (float) 0, (float) 0);
         }
+        assert translateAnimation != null;
         translateAnimation.setDuration(300);
         AlphaAnimation alphaAnimation = new AlphaAnimation((float) 0, (float) 1);
         alphaAnimation.setDuration(300);
@@ -41,6 +42,7 @@ public class AnimationTools {
         } else if (i == 4) {
             translateAnimation = new TranslateAnimation((float) 0, (float) 100, (float) 0, (float) 0);
         }
+        assert translateAnimation != null;
         translateAnimation.setDuration(300);
         AlphaAnimation alphaAnimation = new AlphaAnimation((float) 1, (float) 0);
         alphaAnimation.setDuration(300);
@@ -57,7 +59,7 @@ public class AnimationTools {
         rotateAnimation.setDuration(300);
         animationSet.addAnimation(scaleAnimation);
         animationSet.addAnimation(rotateAnimation);
-        animationSet.setStartOffset((i * 30));
+        animationSet.setStartOffset((i * 30L));
         animationSet.setDuration(300);
         return animationSet;
     }

@@ -133,7 +133,7 @@ public class MainHook implements IXposedHookLoadPackage {
 
         switch (lpparam.packageName) {
             case "com.android.systemui":
-                XposedBridge.log("Hook SystemUI");
+                XposedBridge.log("正在hook 系统界面");
                 try {
                     // 状态栏歌词
                     XposedHelpers.findAndHookMethod("com.android.systemui.statusbar.phone.CollapsedStatusBarFragment", lpparam.classLoader, "onViewCreated", Class.forName("android.view.View"), Class.forName("android.os.Bundle"), new XC_MethodHook() {
@@ -339,12 +339,12 @@ public class MainHook implements IXposedHookLoadPackage {
                                         viewFlipper.setOutAnimation(new AnimationTools().translateOut(i));
                                     }
                                     if (viewFlipper.getDisplayedChild() == 0 && !string.equals(autoMarqueeTextView.getText().toString())) {
-                                         if (config.getHideNoti() && MiuiStatusBarManager.isShowNotificationIcon(application)) {
-                                             MiuiStatusBarManager.setShowNotificationIcon(application, false);
-                                         }
-                                         if (config.getHideNetWork() && MiuiStatusBarManager.isShowNetworkSpeed(application)) {
-                                             MiuiStatusBarManager.setShowNetworkSpeed(application, false);
-                                         }
+                                        if (config.getHideNoti() && MiuiStatusBarManager.isShowNotificationIcon(application)) {
+                                            MiuiStatusBarManager.setShowNotificationIcon(application, false);
+                                        }
+                                        if (config.getHideNetWork() && MiuiStatusBarManager.isShowNetworkSpeed(application)) {
+                                            MiuiStatusBarManager.setShowNetworkSpeed(application, false);
+                                        }
                                         viewFlipper.showNext();
                                         if (config.getLyricAnim().equals("旋转")) {
                                             thread.interrupt();
@@ -400,9 +400,9 @@ public class MainHook implements IXposedHookLoadPackage {
                                             cTextView.setLayoutParams(new LinearLayout.LayoutParams((dw * config.getLyricWidth()) / 100, measuredHeight, (float) 19));
                                         }
                                     } else if (viewFlipper.getDisplayedChild() == 1 && !string.equals(autoMarqueeTextView2.getText().toString())) {
-                                         if (config.getHideNoti() && MiuiStatusBarManager.isShowNotificationIcon(application)) {
-                                             MiuiStatusBarManager.setShowNotificationIcon(application, false);
-                                         }
+                                        if (config.getHideNoti() && MiuiStatusBarManager.isShowNotificationIcon(application)) {
+                                            MiuiStatusBarManager.setShowNotificationIcon(application, false);
+                                        }
                                         if (config.getHideNetWork() && MiuiStatusBarManager.isShowNetworkSpeed(application)) {
                                             MiuiStatusBarManager.setShowNetworkSpeed(application, false);
                                         }
@@ -622,7 +622,7 @@ public class MainHook implements IXposedHookLoadPackage {
                 }
                 break;
             case "com.android.settings":
-                XposedBridge.log("Hook Settings");
+                XposedBridge.log("正在hook 设置");
                 XposedHelpers.findAndHookMethod("com.android.settings.NotchStatusBarSettings", lpparam.classLoader, "onCreate", Class.forName("android.os.Bundle"), new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -645,6 +645,7 @@ public class MainHook implements IXposedHookLoadPackage {
                 });
                 break;
             case "com.netease.cloudmusic":
+                XposedBridge.log("正在hook 网易云音乐");
                 XposedHelpers.findAndHookMethod("com.netease.cloudmusic.module.player.t.e", lpparam.classLoader, "o", new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -688,7 +689,7 @@ public class MainHook implements IXposedHookLoadPackage {
                 });
                 break;
             case "com.kugou.android":
-                XposedBridge.log("正在hook酷狗音乐");
+                XposedBridge.log("正在hook 酷狗音乐");
                 XposedHelpers.findAndHookMethod(Class.forName("android.media.AudioManager").getName(), lpparam.classLoader, "isBluetoothA2dpOn", new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -716,6 +717,7 @@ public class MainHook implements IXposedHookLoadPackage {
                 });
                 break;
             case "cn.kuwo.player":
+                XposedBridge.log("正在hook 酷我音乐");
                 XposedHelpers.findAndHookMethod("android.bluetooth.BluetoothAdapter", lpparam.classLoader, "isEnabled", new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -737,10 +739,10 @@ public class MainHook implements IXposedHookLoadPackage {
                         if (param.args[0] != null && !str.equals("") && !str.equals("好音质 用酷我") && !str.equals("正在搜索歌词...") && !str.contains(" - ")) {
                             sendLyric(context, " " + str, "kuwo");
                         }
-                        param.setResult(replaceHookedMethod(param));
+                        param.setResult(replaceHookedMethod());
                     }
 
-                    protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
+                    Object replaceHookedMethod() {
                         return null;
                     }
 
@@ -751,6 +753,7 @@ public class MainHook implements IXposedHookLoadPackage {
                 });
                 break;
             case "com.tencent.qqmusic":
+                XposedBridge.log("正在hook QQ音乐");
                 XposedHelpers.findAndHookMethod(lpparam.classLoader.loadClass("com.tencent.qqmusicplayerprocess.servicenew.mediasession.d$d"), "run", new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -761,7 +764,7 @@ public class MainHook implements IXposedHookLoadPackage {
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         super.afterHookedMethod(param);
 
-                        Class findClass = XposedHelpers.findClass("com.lyricengine.base.h", lpparam.classLoader);
+                        Class<?> findClass = XposedHelpers.findClass("com.lyricengine.base.h", lpparam.classLoader);
                         Field declaredField = findClass.getDeclaredField("a");
                         declaredField.setAccessible(true);
 
@@ -791,6 +794,7 @@ public class MainHook implements IXposedHookLoadPackage {
             //     });
             //     break;
             case "com.miui.aod":
+                XposedBridge.log("正在hook 万象息屏");
                 XposedHelpers.findAndHookMethod(lpparam.classLoader.loadClass("com.miui.aod.AODView"), "makeNormalPanel", new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {

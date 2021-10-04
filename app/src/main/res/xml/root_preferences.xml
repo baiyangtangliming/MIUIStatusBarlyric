@@ -1,109 +1,109 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+                  xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory
-        android:title="基础设置"/>
+            android:title="基础设置"/>
 
     <CheckBoxPreference
-        android:title="总开关"
-        android:key="lyricService"
-        android:summary=""/>
+            android:title="总开关"
+            android:key="lyricService"
+            android:summary=""/>
 
     <EditTextPreference
-        android:title="歌词宽度"
-        android:key="lyricWidth"
-        android:summary="35%"/>
+            android:title="歌词宽度"
+            android:key="lyricWidth"
+            android:summary="35%"/>
 
     <EditTextPreference
-        android:title="歌词自适应最大宽度"
-        android:key="lyricMaxWidth"
-        android:summary="35%"/>
+            android:title="歌词自适应最大宽度"
+            android:key="lyricMaxWidth"
+            android:summary="35%"/>
 
     <ListPreference
-        android:title="歌词动效"
-        android:key="lyricAnim"
-        android:summary="旋转"/>
+            android:title="歌词动效"
+            android:key="lyricAnim"
+            android:summary="旋转"/>
 
     <EditTextPreference
-        android:title="歌词颜色 "
-       android:key="lyricColour"
-        android:summary="关闭"/>
+            android:title="歌词颜色 "
+            android:key="lyricColour"
+            android:summary="关闭"/>
 
     <ListPreference
-        android:title="图标"
-        android:key="icon"
-        android:summary="自动"/>
+            android:title="图标"
+            android:key="icon"
+            android:summary="自动"/>
 
     <ListPreference
-        android:title="图标反色模式"
-        android:key="iconFanse"
-        android:summary=""/>
+            android:title="图标反色模式"
+            android:key="iconFanse"
+            android:summary=""/>
 
     <PreferenceCategory
-        android:title="其他"/>
+            android:title="其他"/>
 
     <CheckBoxPreference
-        android:title="歌曲暂停关闭歌词"
-        android:key="lyricOff"
-        android:summary=""/>
+            android:title="歌曲暂停关闭歌词"
+            android:key="lyricOff"
+            android:summary=""/>
 
     <CheckBoxPreference
-        android:title="隐藏通知图标"
-        android:key="hideNoti"
-        android:summary="有歌词自动隐藏通知图标"/>
+            android:title="隐藏通知图标"
+            android:key="hideNoti"
+            android:summary="有歌词自动隐藏通知图标"/>
 
     <CheckBoxPreference
-        android:title="隐藏实时网速"
-        android:key="hideNetWork"
-        android:summary="有歌词自动隐藏实时网速"/>
+            android:title="隐藏实时网速"
+            android:key="hideNetWork"
+            android:summary="有歌词自动隐藏实时网速"/>
 
     <ListPreference
-        android:title="歌词获取模式"
-        android:key="lyricModel"
-        android:summary=""/>
+            android:title="歌词获取模式"
+            android:key="lyricModel"
+            android:summary=""/>
 
     <PreferenceScreen
-        android:title="重启系统界面"
-        android:key="restartUI"
-        android:summary="lsp激活后需重启系统界面生效，edxp需重启手机"/>
+            android:title="重启系统界面"
+            android:key="restartUI"
+            android:summary="lsp激活后需重启系统界面生效，edxp需重启手机"/>
 
-    <PreferenceCategory app:title="其他" />
-
-    <CheckBoxPreference
-        android:title="总开关"
-        android:key="aodLyricService"
-        android:summary=""/>
+    <PreferenceCategory app:title="其他"/>
 
     <CheckBoxPreference
-        android:title="防烧屏"
-        android:key="proSrc"
-        android:summary=""/>
+            android:title="总开关"
+            android:key="aodLyricService"
+            android:summary=""/>
+
+    <CheckBoxPreference
+            android:title="防烧屏"
+            android:key="proSrc"
+            android:summary=""/>
 
     <EditTextPreference
-        android:title="自定义签名"
-        android:key="defSign"
-        android:summary=""/>
+            android:title="自定义签名"
+            android:key="defSign"
+            android:summary=""/>
 
-    <PreferenceCategory app:title="关于" />
-
-    <Preference
-        android:key="author"
-        android:summary="源作者：酷安@莫负初心丶 逆向：GitHub (577fkj)"
-        android:title="开发者" />
+    <PreferenceCategory app:title="关于"/>
 
     <Preference
-        android:key="Sourcecode"
-        android:summary="https://github.com/577fkj/MIUIStatusBarlyric"
-        android:title="项目地址" />
+            android:key="author"
+            android:summary="源作者：酷安@莫负初心丶 逆向：GitHub (577fkj)"
+            android:title="开发者"/>
 
     <Preference
-        android:key="ver_explain"
-        android:summary=""
-        android:title="版本说明" />
+            android:key="Sourcecode"
+            android:summary="https://github.com/577fkj/MIUIStatusBarlyric"
+            android:title="项目地址"/>
 
     <Preference
-        android:key="reset"
-        android:summary="如果出现某些莫名其妙的问题请点击此处"
-        android:title="重置模块" />
+            android:key="ver_explain"
+            android:summary=""
+            android:title="版本说明与使用范围"/>
+
+    <Preference
+            android:key="reset"
+            android:summary="如果出现某些莫名其妙的问题请点击此处"
+            android:title="重置模块"/>
 
 </PreferenceScreen>

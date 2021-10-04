@@ -9,22 +9,18 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 public class CTextView extends ViewGroup {
-    private AnimationTools at = new AnimationTools();
-    private Context context;
+    private final AnimationTools at = new AnimationTools();
 
     public CTextView(Context context) {
         super(context);
-        this.context = context;
     }
 
     public CTextView(Context context, AttributeSet attributeSet) {
         super(context, attributeSet);
-        this.context = context;
     }
 
     public CTextView(Context context, AttributeSet attributeSet, int i) {
         super(context, attributeSet, i);
-        this.context = context;
     }
 
     public void setText(String str, Context context, int i, float f, Typeface typeface, ColorStateList colorStateList) {
@@ -44,15 +40,6 @@ public class CTextView extends ViewGroup {
                 viewArr[i2].startAnimation(this.at.animRotate(i2));
             }
         }
-    }
-
-    public int getW() {
-        int i = 0;
-        int childCount = getChildCount();
-        for (int i2 = 0; i2 < childCount; i2++) {
-            i += getChildAt(i2).getMeasuredWidth();
-        }
-        return i;
     }
 
     public void setTextColor(ColorStateList colorStateList) {

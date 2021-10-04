@@ -1,32 +1,21 @@
 package cn.fkj233.hook.miuistatusbarlyric;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
-
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.preference.CheckBoxPreference;
-import androidx.preference.EditTextPreference;
-import androidx.preference.ListPreference;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.*;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -35,14 +24,14 @@ public class SettingsActivity extends AppCompatActivity {
             file.delete();
             return;
         }
-        if(file.isDirectory()){
+        if (file.isDirectory()) {
             File[] childFiles = file.listFiles();
             if (childFiles == null || childFiles.length == 0) {
                 file.delete();
                 return;
             }
-            for (int i = 0; i < childFiles.length; i++) {
-                delete(childFiles[i]);
+            for (File childFile : childFiles) {
+                delete(childFile);
             }
             file.delete();
         }
@@ -68,7 +57,7 @@ public class SettingsActivity extends AppCompatActivity {
         private Config config;
 
 
-
+        @SuppressLint("SdCardPath")
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
@@ -101,10 +90,10 @@ public class SettingsActivity extends AppCompatActivity {
                 if (newValue.toString().equals("-1")) {
                     lyricWidth.setDialogMessage("(-1~100，-1为自适应)，当前:自适应");
                 } else {
-                    lyricWidth.setDialogMessage("(-1~100，-1为自适应)，当前:" + newValue.toString());
+                    lyricWidth.setDialogMessage("(-1~100，-1为自适应)，当前:" + newValue);
                 }
                 config.setLyricWidth(Integer.parseInt(newValue.toString()));
-            return true;
+                return true;
             });
 
             // 歌词最大自适应宽度
@@ -123,7 +112,7 @@ public class SettingsActivity extends AppCompatActivity {
                     lyricMaxWidth.setSummary("关闭");
                     lyricMaxWidth.setDefaultValue("关闭");
                 } else {
-                    lyricMaxWidth.setDialogMessage("(-1~100，-1为关闭，仅在歌词宽度为自适应时生效)，当前:" + newValue.toString());
+                    lyricMaxWidth.setDialogMessage("(-1~100，-1为关闭，仅在歌词宽度为自适应时生效)，当前:" + newValue);
                 }
                 config.setLyricMaxWidth(Integer.parseInt(newValue.toString()));
                 return true;
@@ -228,12 +217,12 @@ public class SettingsActivity extends AppCompatActivity {
             Preference reSystemUI = findPreference("restartUI");
             assert reSystemUI != null;
             reSystemUI.setOnPreferenceClickListener(((preference) -> {
-                 new AlertDialog.Builder(requireActivity())
-                         .setTitle("确定重启系统界面吗？")
-                         .setMessage("若使用中突然发现不能使用，可尝试重启系统界面。")
-                         .setPositiveButton("确定", (dialog, which) -> killProcess("systemui"))
-                         .create()
-                         .show();
+                new AlertDialog.Builder(requireActivity())
+                        .setTitle("确定重启系统界面吗？")
+                        .setMessage("若使用中突然发现不能使用，可尝试重启系统界面。")
+                        .setPositiveButton("确定", (dialog, which) -> killProcess("systemui"))
+                        .create()
+                        .show();
                 return true;
             }));
 
@@ -266,27 +255,16 @@ public class SettingsActivity extends AppCompatActivity {
                 return true;
             });
 
-            // 项目地址
-            Preference sourcecode = findPreference("Sourcecode");
-            assert sourcecode != null;
-            sourcecode.setOnPreferenceClickListener((preference) -> {
-                Uri uri = Uri.parse("https://github.com/577fkj/MIUIStatusBarlyric");
-                Intent intent = new Intent();
-                intent.setAction("android.intent.action.VIEW");
-                intent.setData(uri);
-                startActivity(intent);
-                return true;
-            });
-
             //版本介绍
             Preference verExplain = findPreference("ver_explain");
             assert verExplain != null;
             verExplain.setSummary("当前版本: " + Utlis.getLocalVersionName(requireContext()));
             verExplain.setOnPreferenceClickListener((preference) -> {
                 new AlertDialog.Builder(requireActivity())
-                        .setTitle("当前版本[" + Utlis.getLocalVersionName(requireContext()) + "]适用于")
-                        .setMessage("酷狗音乐:v10.8.4\n酷我音乐:v9.4.6.2\n网易云音乐:v8.5.30\nQQ音乐:v10.17.0.11")
-                        .setPositiveButton("确定", (dialog, which) -> {})
+                        .setTitle("当前版本[" + Utlis.getLocalVersionName(requireContext()) + "]最高适用于")
+                        .setMessage("酷狗音乐:v10.8.4\n酷我音乐:v9.4.6.2\n网易云音乐:v8.5.40\nQQ音乐:v10.17.0.11")
+                        .setPositiveButton("确定", (dialog, which) -> {
+                        })
                         .create()
                         .show();
                 return true;
@@ -297,16 +275,16 @@ public class SettingsActivity extends AppCompatActivity {
             assert reset != null;
             reset.setOnPreferenceClickListener((preference) -> {
                 new AlertDialog.Builder(requireActivity())
-                    .setTitle("是否要重置模块")
-                    .setMessage("模块没问题请不要随意重置")
-                    .setPositiveButton("确定", (dialog, which) -> {
-                        delete(new File(Utlis.PATH));
-                        delete(new File("/data/data/cn.fkj233.hook.miuistatusbarlyric/shared_prefs/"));
-                        Toast.makeText(requireActivity(), "重置成功", Toast.LENGTH_SHORT).show();
-                        System.exit(0);
-                    })
-                    .create()
-                    .show();
+                        .setTitle("是否要重置模块")
+                        .setMessage("模块没问题请不要随意重置")
+                        .setPositiveButton("确定", (dialog, which) -> {
+                            delete(new File(Utlis.PATH));
+                            delete(new File("/data/data/cn.fkj233.hook.miuistatusbarlyric/shared_prefs/"));
+                            Toast.makeText(requireActivity(), "重置成功", Toast.LENGTH_SHORT).show();
+                            System.exit(0);
+                        })
+                        .create()
+                        .show();
                 return true;
             });
 
@@ -324,12 +302,12 @@ public class SettingsActivity extends AppCompatActivity {
                         return true;
                     }
                 }
-                lyricColour.setDialogMessage("请输入16进制颜色代码，例如: #C0C0C0，目前：" + newValue.toString());
+                lyricColour.setDialogMessage("请输入16进制颜色代码，例如: #C0C0C0，目前：" + newValue);
                 lyricColour.setSummary(newValue.toString());
                 config.setLyricColor(newValue.toString());
                 return true;
             });
-            
+
             // 隐藏实时网速
             CheckBoxPreference hideNetWork = findPreference("hideNetWork");
             assert hideNetWork != null;
@@ -387,7 +365,7 @@ public class SettingsActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-        
+
         private void checkPermission() {
             if (ContextCompat.checkSelfPermission(requireActivity(), "android.permission.WRITE_EXTERNAL_STORAGE") != 0) {
                 if (ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(), "android.permission.WRITE_EXTERNAL_STORAGE")) {
@@ -419,6 +397,7 @@ public class SettingsActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             try {
+                assert process != null;
                 process.waitFor();
             } catch (InterruptedException e2) {
                 e2.printStackTrace();

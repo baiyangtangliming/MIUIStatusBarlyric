@@ -6,19 +6,16 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Movie;
-import android.os.Build;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.View;
 
 public class GifView extends View {
-    private static final int DEFAULT_MOVIE_DURATION = 1000;
     private int mCurrentAnimationTime;
     private float mLeft;
     private int mMeasuredMovieHeight;
     private int mMeasuredMovieWidth;
     private Movie mMovie;
-    private int mMovieResourceId;
     private long mMovieStart;
     private volatile boolean mPaused;
     private float mScale;
@@ -38,52 +35,24 @@ public class GifView extends View {
         this.mCurrentAnimationTime = 0;
         this.mVisible = true;
         this.mPaused = false;
-        setViewAttributes(context, attributeSet, i);
+        setViewAttributes(context, attributeSet);
     }
 
-    @SuppressLint("NewApi")
-    private void setViewAttributes(Context context, AttributeSet attributeSet, int i) {
-        if (Build.VERSION.SDK_INT >= 11) {
-            setLayerType(1, null);
-        }
+    @SuppressLint({"NewApi", "WrongConstant"})
+    private void setViewAttributes(Context context, AttributeSet attributeSet) {
+        setLayerType(1, null);
         TypedArray obtainStyledAttributes = context.obtainStyledAttributes(attributeSet, new int[]{2130771989, 2130771990});
-        this.mMovieResourceId = obtainStyledAttributes.getResourceId(0, -1);
+        int mMovieResourceId = obtainStyledAttributes.getResourceId(0, -1);
         this.mPaused = obtainStyledAttributes.getBoolean(1, false);
         obtainStyledAttributes.recycle();
-        if (this.mMovieResourceId != -1) {
-            this.mMovie = Movie.decodeStream(getResources().openRawResource(this.mMovieResourceId));
+        if (mMovieResourceId != -1) {
+            this.mMovie = Movie.decodeStream(getResources().openRawResource(mMovieResourceId));
         }
     }
 
     public void setMovieResource(String str) {
         this.mMovie = Movie.decodeFile(str);
         requestLayout();
-    }
-
-    public void setMovie(Movie movie) {
-        this.mMovie = movie;
-        requestLayout();
-    }
-
-    public Movie getMovie() {
-        return this.mMovie;
-    }
-
-    public void setMovieTime(int i) {
-        this.mCurrentAnimationTime = i;
-        invalidate();
-    }
-
-    public void setPaused(boolean z) {
-        this.mPaused = z;
-        if (!z) {
-            this.mMovieStart = SystemClock.uptimeMillis() - ((long) this.mCurrentAnimationTime);
-        }
-        invalidate();
-    }
-
-    public boolean isPaused() {
-        return this.mPaused;
     }
 
     @Override
@@ -101,6 +70,7 @@ public class GifView extends View {
         setMeasuredDimension(getSuggestedMinimumWidth(), getSuggestedMinimumHeight());
     }
 
+    @SuppressLint("WrongConstant")
     @Override
     public void onLayout(boolean z, int i, int i2, int i3, int i4) {
         super.onLayout(z, i, i2, i3, i4);
@@ -128,11 +98,7 @@ public class GifView extends View {
         if (!this.mVisible) {
             return;
         }
-        if (Build.VERSION.SDK_INT >= 16) {
-            postInvalidateOnAnimation();
-        } else {
-            invalidate();
-        }
+        postInvalidateOnAnimation();
     }
 
     private void updateAnimationTime() {
