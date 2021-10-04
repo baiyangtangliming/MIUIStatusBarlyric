@@ -1,6 +1,8 @@
 package cn.fkj233.hook.miuistatusbarlyric;
 
 
+import android.bluetooth.BluetoothAdapter;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -264,6 +266,23 @@ public class Config {
             return (String) this.config.get("文字颜色");
         } catch (JSONException e) {
             return "关闭";
+        }
+    }
+
+    public void setHideNetWork(Boolean bool) {
+        try {
+            this.config.put("隐藏实时网速", bool);
+            this.temp.put("配置文件", this.config);
+            ConfigTools.setConfig(ConfigTools.formateJson(this.temp.toString()));
+        } catch (JSONException e) {
+        }
+    }
+
+    public Boolean getHideNetWork() {
+        try {
+            return (Boolean) this.config.get("隐藏实时网速");
+        } catch (JSONException e) {
+            return false;
         }
     }
 }

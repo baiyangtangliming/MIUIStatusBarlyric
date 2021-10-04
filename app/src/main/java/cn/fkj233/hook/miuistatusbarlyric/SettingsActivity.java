@@ -66,19 +66,6 @@ public class SettingsActivity extends AppCompatActivity {
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
         private Config config;
-        CheckBoxPreference hideNoti;
-        ListPreference icon;
-        ListPreference iconFanse;
-        ListPreference lyricAnim;
-        EditTextPreference lyricMaxWidth;
-        ListPreference lyricModel;
-        CheckBoxPreference lyricOff;
-        CheckBoxPreference lyricService;
-        EditTextPreference lyricWidth;
-        CheckBoxPreference aodLyricService;
-        EditTextPreference defSign;
-        CheckBoxPreference srcService;
-        EditTextPreference lyricColour;
 
 
 
@@ -88,27 +75,27 @@ public class SettingsActivity extends AppCompatActivity {
             checkPermission();
             init();
             initIcon(getContext());
-            this.config = new Config();
+            config = new Config();
 
             // 歌词总开关
-            this.lyricService = findPreference("lyricService");
-            assert this.lyricService != null;
-            this.lyricService.setChecked(this.config.getLyricService());
-            this.lyricService.setOnPreferenceChangeListener((preference, newValue) -> {
-                lyricWidth.setDefaultValue(newValue);
+            CheckBoxPreference lyricService = findPreference("lyricService");
+            assert lyricService != null;
+            lyricService.setChecked(config.getLyricService());
+            lyricService.setOnPreferenceChangeListener((preference, newValue) -> {
+                lyricService.setDefaultValue(newValue);
                 config.setLyricService((Boolean) newValue);
                 return true;
             });
 
             // 歌词宽度
-            this.lyricWidth = findPreference("lyricWidth");
-            assert this.lyricWidth != null;
-            this.lyricWidth.setSummary(this.config.getLyricWidth() + "%");
-            if (this.config.getLyricWidth() == -1) {
-                this.lyricWidth.setSummary("自适应");
+            EditTextPreference lyricWidth = findPreference("lyricWidth");
+            assert lyricWidth != null;
+            lyricWidth.setSummary(config.getLyricWidth() + "%");
+            if (config.getLyricWidth() == -1) {
+                lyricWidth.setSummary("自适应");
             }
-            this.lyricWidth.setDialogMessage("(-1~100，-1为自适应)，当前:" + this.lyricWidth.getSummary());
-            this.lyricWidth.setOnPreferenceChangeListener((preference, newValue) -> {
+            lyricWidth.setDialogMessage("(-1~100，-1为自适应)，当前:" + lyricWidth.getSummary());
+            lyricWidth.setOnPreferenceChangeListener((preference, newValue) -> {
                 lyricWidth.setSummary(newValue.toString());
                 lyricWidth.setDefaultValue(newValue);
                 if (newValue.toString().equals("-1")) {
@@ -121,14 +108,14 @@ public class SettingsActivity extends AppCompatActivity {
             });
 
             // 歌词最大自适应宽度
-            this.lyricMaxWidth = findPreference("lyricMaxWidth");
-            assert this.lyricMaxWidth != null;
-            this.lyricMaxWidth.setSummary(this.config.getLyricMaxWidth() + "%");
-            if (this.config.getLyricMaxWidth() == -1) {
-                this.lyricMaxWidth.setSummary("关闭");
+            EditTextPreference lyricMaxWidth = findPreference("lyricMaxWidth");
+            assert lyricMaxWidth != null;
+            lyricMaxWidth.setSummary(config.getLyricMaxWidth() + "%");
+            if (config.getLyricMaxWidth() == -1) {
+                lyricMaxWidth.setSummary("关闭");
             }
-            this.lyricMaxWidth.setDialogMessage("(-1~100，-1为关闭，仅在歌词宽度为自适应时生效)，当前:" + this.lyricMaxWidth.getSummary());
-            this.lyricMaxWidth.setOnPreferenceChangeListener((preference, newValue) -> {
+            lyricMaxWidth.setDialogMessage("(-1~100，-1为关闭，仅在歌词宽度为自适应时生效)，当前:" + lyricMaxWidth.getSummary());
+            lyricMaxWidth.setOnPreferenceChangeListener((preference, newValue) -> {
                 lyricMaxWidth.setSummary(newValue.toString());
                 lyricMaxWidth.setDefaultValue(newValue);
                 if (newValue.toString().equals("-1")) {
@@ -143,8 +130,8 @@ public class SettingsActivity extends AppCompatActivity {
             });
 
             // 歌词动效
-            this.lyricAnim = findPreference("lyricAnim");
-            assert this.lyricAnim != null;
+            ListPreference lyricAnim = findPreference("lyricAnim");
+            assert lyricAnim != null;
             String[] strArr = new String[7];
             strArr[0] = "关闭";
             strArr[1] = "上滑";
@@ -153,86 +140,86 @@ public class SettingsActivity extends AppCompatActivity {
             strArr[4] = "右滑";
             strArr[5] = "随机";
             strArr[6] = "旋转";
-            this.lyricAnim.setEntries(strArr);
-            this.lyricAnim.setEntryValues(strArr);
-            this.lyricAnim.setSummary(this.config.getLyricAnim().equals("") ? "关闭" : this.config.getLyricAnim());
-            this.lyricAnim.setOnPreferenceChangeListener((preference, newValue) -> {
-                this.config.setLyricAnim(newValue.toString());
-                this.lyricAnim.setSummary(newValue.toString());
+            lyricAnim.setEntries(strArr);
+            lyricAnim.setEntryValues(strArr);
+            lyricAnim.setSummary(config.getLyricAnim().equals("") ? "关闭" : config.getLyricAnim());
+            lyricAnim.setOnPreferenceChangeListener((preference, newValue) -> {
+                config.setLyricAnim(newValue.toString());
+                lyricAnim.setSummary(newValue.toString());
                 return true;
             });
 
             // 图标
-            this.icon = findPreference("icon");
-            assert this.icon != null;
+            ListPreference icon = findPreference("icon");
+            assert icon != null;
             strArr = new String[3];
             strArr[0] = "关闭";
             strArr[1] = "自动";
             strArr[2] = "自定义";
-            this.icon.setEntries(strArr);
-            this.icon.setEntryValues(strArr);
-            this.icon.setSummary(this.config.getIcon().equals("") ? "关闭" : this.config.getIcon());
-            this.icon.setOnPreferenceChangeListener((preference, newValue) -> {
+            icon.setEntries(strArr);
+            icon.setEntryValues(strArr);
+            icon.setSummary(config.getIcon().equals("") ? "关闭" : config.getIcon());
+            icon.setOnPreferenceChangeListener((preference, newValue) -> {
                 config.setIcon(newValue.toString());
-                this.icon.setSummary(newValue.toString());
+                icon.setSummary(newValue.toString());
                 return true;
             });
 
             // 图标反色
-            this.iconFanse = findPreference("iconFanse");
-            assert this.iconFanse != null;
+            ListPreference iconFanse = findPreference("iconFanse");
+            assert iconFanse != null;
             strArr = new String[3];
             strArr[0] = "关闭";
             strArr[1] = "模式一";
             strArr[2] = "模式二";
-            this.iconFanse.setEntries(strArr);
-            this.iconFanse.setEntryValues(strArr);
-            if (this.config.getFanse().equals("")) {
+            iconFanse.setEntries(strArr);
+            iconFanse.setEntryValues(strArr);
+            if (config.getFanse().equals("")) {
                 iconFanse.setSummary("关闭");
             } else {
-                iconFanse.setSummary(this.config.getFanse());
+                iconFanse.setSummary(config.getFanse());
             }
-            this.iconFanse.setOnPreferenceChangeListener((preference, newValue) -> {
+            iconFanse.setOnPreferenceChangeListener((preference, newValue) -> {
                 config.setFanse(newValue.toString());
-                this.iconFanse.setSummary(newValue.toString());
+                iconFanse.setSummary(newValue.toString());
                 return true;
             });
 
             // 歌词获取模式
-            this.lyricModel = findPreference("lyricModel");
-            assert this.lyricModel != null;
+            ListPreference lyricModel = findPreference("lyricModel");
+            assert lyricModel != null;
             strArr = new String[2];
             strArr[0] = "通用模式";
             strArr[1] = "增强模式";
-            this.lyricModel.setEntries(strArr);
-            this.lyricModel.setEntryValues(strArr);
-            this.lyricModel.setEnabled(false);
-            this.lyricModel.setSummary(this.config.getLyricModel());
-            if (this.lyricModel.getSummary().equals("通用模式")) {
-                this.lyricModel.setValueIndex(0);
+            lyricModel.setEntries(strArr);
+            lyricModel.setEntryValues(strArr);
+            lyricModel.setEnabled(false);
+            lyricModel.setSummary(config.getLyricModel());
+            if (lyricModel.getSummary().equals("通用模式")) {
+                lyricModel.setValueIndex(0);
             } else {
-                this.lyricModel.setValueIndex(1);
+                lyricModel.setValueIndex(1);
             }
-            this.lyricModel.setOnPreferenceChangeListener((preference, newValue) -> {
+            lyricModel.setOnPreferenceChangeListener((preference, newValue) -> {
                 config.setLyricModel(newValue.toString());
-                this.lyricModel.setSummary(newValue.toString());
+                lyricModel.setSummary(newValue.toString());
                 return true;
             });
 
             // 隐藏通知图标
-            this.hideNoti = findPreference("hideNoti");
-            assert this.hideNoti != null;
-            this.hideNoti.setChecked(this.config.getHideNoti());
-            this.hideNoti.setOnPreferenceChangeListener((preference, newValue) -> {
+            CheckBoxPreference hideNoti = findPreference("hideNoti");
+            assert hideNoti != null;
+            hideNoti.setChecked(config.getHideNoti());
+            hideNoti.setOnPreferenceChangeListener((preference, newValue) -> {
                 config.setHideNoti((Boolean) newValue);
                 return true;
             });
 
             // 暂停关闭歌词
-            this.lyricOff = findPreference("lyricOff");
-            assert this.lyricOff != null;
-            this.lyricOff.setChecked(this.config.getLyricOff());
-            this.lyricOff.setOnPreferenceChangeListener((preference, newValue) -> {
+            CheckBoxPreference lyricOff = findPreference("lyricOff");
+            assert lyricOff != null;
+            lyricOff.setChecked(config.getLyricOff());
+            lyricOff.setOnPreferenceChangeListener((preference, newValue) -> {
                 config.setLyricOff((Boolean) newValue);
                 return true;
             });
@@ -251,31 +238,31 @@ public class SettingsActivity extends AppCompatActivity {
             }));
 
             // 息屏显示开关
-            this.aodLyricService = findPreference("aodLyricService");
-            assert this.aodLyricService != null;
-            this.aodLyricService.setChecked(this.config.getAodLyricService());
-            this.aodLyricService.setOnPreferenceChangeListener((preference, newValue) -> {
-                this.config.setAodLyricService((Boolean) newValue);
+            CheckBoxPreference aodLyricService = findPreference("aodLyricService");
+            assert aodLyricService != null;
+            aodLyricService.setChecked(config.getAodLyricService());
+            aodLyricService.setOnPreferenceChangeListener((preference, newValue) -> {
+                config.setAodLyricService((Boolean) newValue);
                 return true;
             });
 
             // 防烧屏
-            this.srcService = findPreference("proSrc");
-            assert this.srcService != null;
-            this.srcService.setChecked(this.config.getSrcService());
-            this.srcService.setOnPreferenceChangeListener((preference, newValue) -> {
-                this.config.setSrcService((Boolean) newValue);
+            CheckBoxPreference srcService = findPreference("proSrc");
+            assert srcService != null;
+            srcService.setChecked(config.getSrcService());
+            srcService.setOnPreferenceChangeListener((preference, newValue) -> {
+                config.setSrcService((Boolean) newValue);
                 return true;
             });
 
             // 个性签名
-            this.defSign = findPreference("defSign");
-            assert this.defSign != null;
-            this.defSign.setSummary(this.config.getSign());
-            this.defSign.setDialogMessage("");
-            this.defSign.setOnPreferenceChangeListener((preference, newValue) -> {
-                this.config.setSign(newValue.toString());
-                this.defSign.setSummary(newValue.toString());
+            EditTextPreference defSign = findPreference("defSign");
+            assert defSign != null;
+            defSign.setSummary(config.getSign());
+            defSign.setDialogMessage("");
+            defSign.setOnPreferenceChangeListener((preference, newValue) -> {
+                config.setSign(newValue.toString());
+                defSign.setSummary(newValue.toString());
                 return true;
             });
 
@@ -291,6 +278,7 @@ public class SettingsActivity extends AppCompatActivity {
                 return true;
             });
 
+            //版本介绍
             Preference verExplain = findPreference("ver_explain");
             assert verExplain != null;
             verExplain.setSummary("当前版本: " + Utlis.getLocalVersionName(requireContext()));
@@ -304,6 +292,7 @@ public class SettingsActivity extends AppCompatActivity {
                 return true;
             });
 
+            // 重置插件
             Preference reset = findPreference("reset");
             assert reset != null;
             reset.setOnPreferenceClickListener((preference) -> {
@@ -321,11 +310,12 @@ public class SettingsActivity extends AppCompatActivity {
                 return true;
             });
 
-            this.lyricColour = findPreference("lyricColour");
-            assert this.lyricColour != null;
-            this.lyricColour.setSummary(config.getLyricColor());
-            this.lyricColour.setDialogMessage("请输入16进制颜色代码，例如: #C0C0C0，目前：" + config.getLyricColor());
-            this.lyricColour.setOnPreferenceChangeListener((preference, newValue) -> {
+            // 歌词颜色
+            EditTextPreference lyricColour = findPreference("lyricColour");
+            assert lyricColour != null;
+            lyricColour.setSummary(config.getLyricColor());
+            lyricColour.setDialogMessage("请输入16进制颜色代码，例如: #C0C0C0，目前：" + config.getLyricColor());
+            lyricColour.setOnPreferenceChangeListener((preference, newValue) -> {
                 if (!newValue.toString().equals("关闭")) {
                     try {
                         Color.parseColor(newValue.toString());
@@ -334,9 +324,18 @@ public class SettingsActivity extends AppCompatActivity {
                         return true;
                     }
                 }
-                this.lyricColour.setDialogMessage("请输入16进制颜色代码，例如: #C0C0C0，目前：" + newValue.toString());
-                this.lyricColour.setSummary(newValue.toString());
+                lyricColour.setDialogMessage("请输入16进制颜色代码，例如: #C0C0C0，目前：" + newValue.toString());
+                lyricColour.setSummary(newValue.toString());
                 config.setLyricColor(newValue.toString());
+                return true;
+            });
+            
+            // 隐藏实时网速
+            CheckBoxPreference hideNetWork = findPreference("hideNetWork");
+            assert hideNetWork != null;
+            hideNetWork.setChecked(config.getHideNetWork());
+            hideNetWork.setOnPreferenceChangeListener((preference, newValue) -> {
+                config.setHideNetWork((Boolean) newValue);
                 return true;
             });
         }

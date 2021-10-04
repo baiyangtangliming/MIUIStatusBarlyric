@@ -88,7 +88,7 @@ public class MainHook implements IXposedHookLoadPackage {
     public static class LyricReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals("Lyric_Server")) {
+            if (intent.getAction().equals("Lyric_Server") || intent.getAction().equals("Lyric_Server_Aod")) {
                 lyric = intent.getStringExtra("Lyric_Data");
                 Config config = new Config();
                 switch (config.getIcon()) {
@@ -114,10 +114,19 @@ public class MainHook implements IXposedHookLoadPackage {
             protected void afterHookedMethod(MethodHookParam param) {
                 context = (Context) param.args[0];
                 // 注册广播
-                if (lpparam.packageName.equals("com.android.systemui")) {
-                    IntentFilter filter = new IntentFilter();
-                    filter.addAction("Lyric_Server");
-                    context.registerReceiver(new LyricReceiver(), filter);
+                IntentFilter filter;
+                switch (lpparam.packageName) {
+                    case "com.android.systemui":
+                        filter = new IntentFilter();
+                        filter.addAction("Lyric_Server");
+                        context.registerReceiver(new LyricReceiver(), filter);
+                        break;
+                    case "com.miui.aod":
+                        if (!new Config().getAodLyricService()) break;
+                        filter = new IntentFilter();
+                        filter.addAction("Lyric_Server_Aod");
+                        context.registerReceiver(new LyricReceiver(), filter);
+                        break;
                 }
             }
         });
@@ -333,6 +342,9 @@ public class MainHook implements IXposedHookLoadPackage {
                                          if (config.getHideNoti() && MiuiStatusBarManager.isShowNotificationIcon(application)) {
                                              MiuiStatusBarManager.setShowNotificationIcon(application, false);
                                          }
+                                         if (config.getHideNetWork() && MiuiStatusBarManager.isShowNetworkSpeed(application)) {
+                                             MiuiStatusBarManager.setShowNetworkSpeed(application, false);
+                                         }
                                         viewFlipper.showNext();
                                         if (config.getLyricAnim().equals("旋转")) {
                                             thread.interrupt();
@@ -391,6 +403,9 @@ public class MainHook implements IXposedHookLoadPackage {
                                          if (config.getHideNoti() && MiuiStatusBarManager.isShowNotificationIcon(application)) {
                                              MiuiStatusBarManager.setShowNotificationIcon(application, false);
                                          }
+                                        if (config.getHideNetWork() && MiuiStatusBarManager.isShowNetworkSpeed(application)) {
+                                            MiuiStatusBarManager.setShowNetworkSpeed(application, false);
+                                        }
                                         viewFlipper.showNext();
                                         if (config.getLyricAnim().equals("旋转")) {
                                             thread.interrupt();
@@ -465,6 +480,9 @@ public class MainHook implements IXposedHookLoadPackage {
                                 if (config.getHideNoti() && !MiuiStatusBarManager.isShowNotificationIcon(application)) {
                                     MiuiStatusBarManager.setShowNotificationIcon(application, true);
                                 }
+                                if (config.getHideNetWork() && MiuiStatusBarManager.isShowNetworkSpeed(application)) {
+                                    MiuiStatusBarManager.setShowNetworkSpeed(application, false);
+                                }
                                 return true;
                             });
 
@@ -500,6 +518,12 @@ public class MainHook implements IXposedHookLoadPackage {
                                                         lyric = "";
                                                         this.temp = lyric;
                                                         this.b = false;
+                                                        if (config.getHideNoti() && !MiuiStatusBarManager.isShowNotificationIcon(application)) {
+                                                            MiuiStatusBarManager.setShowNotificationIcon(application, true);
+                                                        }
+                                                        if (config.getHideNetWork() && !MiuiStatusBarManager.isShowNetworkSpeed(application)) {
+                                                            MiuiStatusBarManager.setShowNetworkSpeed(application, true);
+                                                        }
                                                     }
                                                 } else {
                                                     this.b = true;
@@ -576,6 +600,12 @@ public class MainHook implements IXposedHookLoadPackage {
                                                         lyric = "";
                                                         this.temp = lyric;
                                                         this.b = false;
+                                                        if (config.getHideNoti() && !MiuiStatusBarManager.isShowNotificationIcon(application)) {
+                                                            MiuiStatusBarManager.setShowNotificationIcon(application, true);
+                                                        }
+                                                        if (config.getHideNetWork() && !MiuiStatusBarManager.isShowNetworkSpeed(application)) {
+                                                            MiuiStatusBarManager.setShowNetworkSpeed(application, true);
+                                                        }
                                                     }
                                                 }
                                             }
@@ -1002,6 +1032,8 @@ public class MainHook implements IXposedHookLoadPackage {
 
     public void sendLyric(Context context, String lyric, String icon) {
         context.sendBroadcast(new Intent().setAction("Lyric_Server").putExtra("Lyric_Data", lyric).putExtra("Lyric_Icon", icon));
+        if (!new Config().getAodLyricService()) return;
+        context.sendBroadcast(new Intent().setAction("Lyric_Server_Aod").putExtra("Lyric_Data", lyric).putExtra("Lyric_Icon", icon));
     }
 
 
